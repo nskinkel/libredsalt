@@ -1,0 +1,7 @@
+[package]
+name = "tweetnacl"
+version = "0.1.0"
+authors = ["David Johnston <dwtj@iastate.edu>"]
+
+[dependencies]
+libc="*"
