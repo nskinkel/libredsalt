@@ -1,7 +1,17 @@
 [package]
-name = "tweetnacl"
+name = "tweetnacl_rs"
 version = "0.1.0"
-authors = ["David Johnston <dwtj@iastate.edu>"]
+authors = ["David Johnston <dwtj@iastate.edu>",
+           "Nik Kinkel <nskinkel@iastate.edu"]
+links = "tweetnacl"
+build = "build.rs"
+
+[lib]
+name = "tweetnacl_rs"
+crate-type = ["staticlib"]
+
+[build-dependencies]
+gcc="0.3"
 
 [dependencies]
 libc="*"
