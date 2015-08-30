@@ -35,19 +35,17 @@ pub const crypto_stream_NONCEBYTES: usize = 24;
 
 
 extern {
-    /*
-    pub fn crypto_verify_16_tweet(const u8 *x,const u8 *y) -> c_int;
-    pub fn crypto_verify_32_tweet(const u8 *x,const u8 *y) -> c_int;
+    pub fn crypto_verify_16_tweet(x: *const u8, y: *const u8) -> c_int;
+    pub fn crypto_verify_32_tweet(x: *const u8, y: *const u8) -> c_int;
 
-    pub fn crypto_stream_xsalsa20_tweet(u8 *c,u64 d,const u8 *n,const u8 *k);
-    pub fn crypto_stream_xsalsa20_tweet_xor(c,m,mlen,n,k);
+    pub fn crypto_stream_xsalsa20_tweet(c: *mut u8, d: u64, n: *const u8, k: *const u8);
+    pub fn crypto_stream_xsalsa20_tweet_xor(c: *mut u8, m: *const u8, d: u64, n: *const u8, k: *const u8);
 
-    pub fn crypto_onetimeauth_poly1305_tweet(u8 *out,const u8 *m,u64 n,const u8 *k) -> c_int;
-    pub fn crypto_onetimeauth_poly1305_tweet_verify(const u8 *h,const u8 *m,u64 n,const u8 *k) -> c_int;
+    pub fn crypto_onetimeauth_poly1305_tweet(out: *mut u8, m: *const u8, n: u64, k: *const u8) -> c_int;
+    pub fn crypto_onetimeauth_poly1305_tweet_verify(h: *const u8, m: *const u8, n: u64, k: *const u8) -> c_int;
 
-    pub fn crypto_scalarmult_curve25519_tweet(u8 *q,const u8 *n,const u8 *p) -> c_int;
-    pub fn crypto_scalarmult_curve25519_tweet_base(u8 *q,const u8 *n) -> c_int;
-    */
+    pub fn crypto_scalarmult_curve25519_tweet(q: *mut u8, n: *const u8, p: *const u8) -> c_int;
+    pub fn crypto_scalarmult_curve25519_tweet_base(q: *mut u8, n: *const u8) -> c_int;
 
     pub fn crypto_box_curve25519xsalsa20poly1305_tweet_keypair(pk: *mut u8, sk: *mut u8) -> c_int;
     /*
