@@ -94,6 +94,6 @@ extern {
         -> c_int;
 
     pub fn crypto_sign_ed25519_tweet_open(
-        m: *mut u8, mlen: *mut u64, sm: *const u8, n: u64, pk: *const u8)
-        -> c_int;
+        m: *mut u8, mlen: *mut u64, sm: *const u8, n: u64,
+        pk: *const u8) -> c_int;
 }

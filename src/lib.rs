@@ -2,6 +2,8 @@ extern crate libc;
 
 mod ffi;
 
+pub mod crypto_sign;
+
 /// Returns true iff the two 16 byte strings are equivalent.
 ///
 /// ```
@@ -38,8 +40,6 @@ pub fn crypto_verify_32(x: &[u8], y: &[u8]) -> bool {
         }
     }
 }
-
-test
 
 pub fn crypto_stream(out: &mut[u8], d: u64, n: &[u8], k: &[u8]) {
     unsafe {
@@ -159,32 +159,6 @@ pub fn crypto_hash(out: &mut[u8], m: &[u8], n: u64) {
     unsafe {
         ffi::crypto_hash_sha512_tweet(
             out.as_mut_ptr(), m.as_ptr(), n
-        );
-    }
-}
-
-pub fn crypto_sign_keypair(pk: &mut[u8], sk: &mut[u8]) {
-    unsafe {
-        ffi::crypto_sign_ed25519_tweet_keypair(
-            pk.as_mut_ptr(), sk.as_mut_ptr()
-        );
-    }
-}
-
-pub fn crypto_sign(sm: &mut[u8], smlen: &mut u64, m: &[u8], n: u64,
-                   sk: &[u8]) {
-    unsafe {
-        ffi::crypto_sign_ed25519_tweet(
-            sm.as_mut_ptr(), smlen, m.as_ptr(), n, sk.as_ptr()
-        );
-    }
-}
-
-pub fn crypto_sign_open(m: &mut[u8], mlen: &mut u64, sm: &[u8], n: u64,
-                        pk: &[u8]) {
-    unsafe {
-        ffi::crypto_sign_ed25519_tweet_open(
-            m.as_mut_ptr(), mlen, sm.as_ptr(), n, pk.as_ptr()
         );
     }
 }
