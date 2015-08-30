@@ -68,68 +68,97 @@ pub fn crypto_box_keypair(pk: &mut[u8], sk: &mut[u8]) -> i32 {
     }
 }
 
-pub fn crypto_box_beforenm() {
+pub fn crypto_box_beforenm(k: &mut[u8], y: &[u8], x: &[u8]) {
     unsafe {
-        //ffi::crypto_box_beforenm();
+        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_beforenm(
+            k.as_mut_ptr(), y.as_ptr(), x.as_ptr()
+        );
     }
 }
 
-pub fn crypto_box_afternm() {
+pub fn crypto_box_afternm(c: &mut[u8], m: &[u8], d: u64, n: &[u8],
+                          k: &[u8]) {
     unsafe {
-        //ffi::crypto_box_afternm();
+        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_afternm(
+            c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), k.as_ptr()         
+        );
     }
 }
 
-pub fn crypto_box_open_afternm() {
+pub fn crypto_box_open_afternm(m: &mut[u8], c: &[u8], d: u64, n: &[u8],
+                               k: &[u8]) {
     unsafe {
-        //ffi::crypto_box_open_afternm();
+        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_open_afternm(
+            m.as_mut_ptr(), c.as_ptr(), d, n.as_ptr(), k.as_ptr()
+        );
     }
 }
 
-pub fn crypto_box() {
+pub fn crypto_box(c: &mut[u8], m: &[u8], d: u64, n: &[u8], y: &[u8],
+                  x: &[u8]) {
     unsafe {
-        //ffi::crypto_box();
+        ffi::crypto_box_curve25519xsalsa20poly1305_tweet(
+            c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), y.as_ptr(), x.as_ptr()
+        );
     }
 }
 
-pub fn crypto_box_open() {
+pub fn crypto_box_open(m: &mut[u8], c: &[u8], d: u64, n: &[u8], y: &[u8],
+                       x: &[u8]) {
     unsafe {
-        //ffi::crypto_box_open();
+        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_open(
+            m.as_mut_ptr(), c.as_ptr(), d, n.as_ptr(), y.as_ptr(), x.as_ptr()
+        );
     }
 }
 
-pub fn crypto_secretbox() {
+pub fn crypto_secretbox(c: &mut[u8], m: &[u8], d: u64, n: &[u8], k: &[u8]) {
     unsafe {
-        //ffi::crypto_secretbox();
+        ffi::crypto_secretbox_xsalsa20poly1305_tweet(
+            c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), k.as_ptr()
+        );
     }
 }
 
-pub fn crypto_secretbox_open() {
+pub fn crypto_secretbox_open(m: &mut[u8], c: &[u8], d: u64, n: &[u8],
+                             k: &[u8]) {
     unsafe {
-        //ffi::crypto_secretbox_open();
+        ffi::crypto_secretbox_xsalsa20poly1305_tweet_open(
+            m.as_mut_ptr(), c.as_ptr(), d, n.as_ptr(), k.as_ptr()
+        );
     }
 }
 
-pub fn crypto_hash() {
+pub fn crypto_hash(out: &mut[u8], m: &[u8], n: u64) {
     unsafe {
-        //ffi::crypto_hash();
+        ffi::crypto_hash_sha512_tweet(
+            out.as_mut_ptr(), m.as_ptr(), n
+        );
     }
 }
 
-pub fn crypto_sign_keypair() {
+pub fn crypto_sign_keypair(pk: &mut[u8], sk: &mut[u8]) {
     unsafe {
-        //ffi::crypto_sign_keypair();
+        ffi::crypto_sign_ed25519_tweet_keypair(
+            pk.as_mut_ptr(), sk.as_mut_ptr()
+        );
     }
 }
 
-pub fn crypto_sign() {
+pub fn crypto_sign(sm: &mut[u8], smlen: &mut u64, m: &[u8], n: u64,
+                   sk: &[u8]) {
     unsafe {
-        //ffi::crypto_sign();
+        ffi::crypto_sign_ed25519_tweet(
+            sm.as_mut_ptr(), smlen, m.as_ptr(), n, sk.as_ptr()
+        );
     }
 }
 
-pub fn crypto_sign_open() {
+pub fn crypto_sign_open(m: &mut[u8], mlen: &mut u64, sm: &[u8], n: u64,
+                        pk: &[u8]) {
     unsafe {
-        //ffi::crypto_sign_open();
+        ffi::crypto_sign_ed25519_tweet_open(
+            m.as_mut_ptr(), mlen, sm.as_ptr(), n, pk.as_ptr()
+        );
     }
 }
