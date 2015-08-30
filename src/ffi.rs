@@ -47,21 +47,53 @@ extern {
     pub fn crypto_scalarmult_curve25519_tweet(q: *mut u8, n: *const u8, p: *const u8) -> c_int;
     pub fn crypto_scalarmult_curve25519_tweet_base(q: *mut u8, n: *const u8) -> c_int;
 
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_keypair(pk: *mut u8, sk: *mut u8) -> c_int;
-    /*
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_beforenm(u8 *k,const u8 *y,const u8 *x) -> c_int;
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_afternm(u8 *c,const u8 *m,u64 d,const u8 *n,const u8 *k) -> c_int;
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_open_afternm(u8 *m,const u8 *c,u64 d,const u8 *n,const u8 *k) -> c_int;
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet(u8 *c,const u8 *m,u64 d,const u8 *n,const u8 *y,const u8 *x) -> c_int;
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_open(u8 *m,const u8 *c,u64 d,const u8 *n,const u8 *y,const u8 *x) -> c_int
+    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_keypair(
+        pk: *mut u8, sk: *mut u8)
+        -> c_int;
 
-    pub fn crypto_secretbox_xsalsa20poly1305_tweet(u8 *c,const u8 *m,u64 d,const u8 *n,const u8 *k) -> c_int;
-    pub fn crypto_secretbox_xsalsa20poly1305_tweet_open(u8 *m,const u8 *c,u64 d,const u8 *n,const u8 *k) -> c_int;
+    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_beforenm(
+        k: *mut u8, y: *const u8, x: *const u8)
+        -> c_int;
 
-    pub fn crypto_hash_sha512_tweet(u8 *out,const u8 *m,u64 n) -> c_int;
+    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_afternm(
+        c: *mut u8, m: *const u8, d: u64, n: *const u8, k: *const u8)
+        -> c_int;
 
-    pub fn crypto_sign_ed25519_tweet_keypair(u8 *pk, u8 *sk) -> c_int;
-    pub fn crypto_sign_ed25519_tweet(u8 *sm,u64 *smlen,const u8 *m,u64 n,const u8 *sk) -> c_int;
-    pub fn crypto_sign_ed25519_tweet_open(u8 *m,u64 *mlen,const u8 *sm,u64 n,const u8 *pk) -> c_int;
-    */
+    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_open_afternm(
+        m: *mut u8, c: *const u8, d: u64, n: *const u8, k: *const u8)
+        -> c_int;
+
+    pub fn crypto_box_curve25519xsalsa20poly1305_tweet(
+        c: *mut u8, m: *const u8, d: u64, n: *const u8, y: *const u8,
+        x: *const u8)
+        -> c_int;
+
+    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_open(
+        m: *mut u8, c: *const u8, d: u64, n: *const u8, y: *const u8,
+        x: *const u8)
+        -> c_int; 
+
+    pub fn crypto_secretbox_xsalsa20poly1305_tweet(
+        c: *mut u8, m: *const u8, d: u64, n: *const u8, k: *const u8)
+        -> c_int;
+
+    pub fn crypto_secretbox_xsalsa20poly1305_tweet_open(
+        m: *mut u8, c: *const u8, d: u64, n: *const u8, k: *const u8)
+        -> c_int;
+
+    pub fn crypto_hash_sha512_tweet(
+        out: *mut u8, m: *const u8, n: u64)
+        -> c_int;
+
+    pub fn crypto_sign_ed25519_tweet_keypair(
+        pk: *mut u8, sk: *mut u8)
+        -> c_int;
+
+    pub fn crypto_sign_ed25519_tweet(
+        sm: *mut u8, smlen: *mut u64, m: *const u8, n: u64, sk: *const u8)
+        -> c_int;
+
+    pub fn crypto_sign_ed25519_tweet_open(
+        m: *mut u8, mlen: *mut u64, sm: *const u8, n: u64, pk: *const u8)
+        -> c_int;
 }
