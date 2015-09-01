@@ -2,9 +2,12 @@ use ffi;
 
 #[derive(Debug)]
 pub enum CryptoSignErr {
+    InvalidPKLengthErr,
     InvalidSKLengthErr,
+    InvalidSignedMessageLength,
     KeyGenErr,
     SignErr,
+    SignatureVerification,
 }
 
 /// Generate a signing keypair.
@@ -68,13 +71,29 @@ pub fn crypto_sign(m: &[u8], sk: &[u8]) -> Result<Box<[u8]>, CryptoSignErr> {
     }
 }
 
-/*
-pub fn crypto_sign_open(m: &mut[u8], mlen: &mut u64, sm: &[u8], n: u64,
-                        pk: &[u8]) {
+pub fn crypto_sign_open(sm: &[u8], pk: &[u8])
+                        -> Result<Box<[u8]>, CryptoSignErr> {
+    if pk.len() != ffi::crypto_sign_PUBLICKEYBYTES {
+        return Err(CryptoSignErr::InvalidPKLengthErr);
+    }
+
+    let smlen = sm.len();
+
+    if sm.len() <= ffi::crypto_sign_BYTES {
+        return Err(CryptoSignErr::InvalidSignedMessageLength);
+    }
+
+    let mlen = smlen-ffi::crypto_sign_BYTES;
+    let mut m: Box<[u8]> = Vec::with_capacity(mlen).into_boxed_slice();
+
     unsafe {
-        ffi::crypto_sign_ed25519_tweet_open(
-            m.as_mut_ptr(), mlen, sm.as_ptr(), n, pk.as_ptr()
-        );
+        match ffi::crypto_sign_ed25519_tweet_open(m.as_mut_ptr(),
+                                                  mlen as *mut u64,
+                                                  sm.as_ptr(),
+                                                  smlen as u64,
+                                                  pk.as_ptr()) {
+            0 => Ok(m),
+            _ => Err(CryptoSignErr::SignatureVerification),
+        }
     }
 }
-*/
