@@ -180,7 +180,6 @@ mod tests {
         let pk = [0 as u8; ffi::crypto_sign_PUBLICKEYBYTES];
         let result = crypto_sign_open(&[0 as u8; ffi::crypto_sign_BYTES],
                                       &pk);
-        assert!(result.is_err());
         assert!(result == Err(CryptoSignErr::SignedMessageLength));
     }
 
@@ -198,9 +197,11 @@ mod tests {
             Ok(v) => v,
             Err(e) => panic!(e),
         };
+
         let mut invalid_pk = pk.clone();
         let mut invalid_sig = sm.clone();
         let mut invalid_msg = sm.clone();
+
         // modify the signature
         invalid_sig[0] = sm[0] ^ sm[0];
         // modify the message
@@ -212,15 +213,12 @@ mod tests {
 
         // attempt verification
         let result = crypto_sign_open(&invalid_sig, &pk);
-        assert!(result.is_err());
         assert!(result == Err(CryptoSignErr::SignatureVerification));
 
         let result = crypto_sign_open(&invalid_msg, &pk);
-        assert!(result.is_err());
         assert!(result == Err(CryptoSignErr::SignatureVerification));
 
         let result = crypto_sign_open(&sm, &invalid_pk);
-        assert!(result.is_err());
         assert!(result == Err(CryptoSignErr::SignatureVerification));
     }
 }
