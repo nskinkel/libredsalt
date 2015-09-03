@@ -3,8 +3,6 @@ use ffi;
 #[derive(Debug, Eq, PartialEq)]
 pub enum CryptoSignErr {
     KeyGen,
-    PublicKeyLength,
-    SecretKeyLength,
     Sign,
     SignedMessageLength,
     SignatureVerification,
@@ -20,10 +18,8 @@ pub enum CryptoSignErr {
 ///
 /// # Failures
 ///
-/// If `sk` is not `crypto_sign_SECRETKEYBYTES` long, an
-/// `Err(CryptoSignErr::SecretKeyLength)` will be returned. If the internal
-/// key generation process fails, `Err(CryptoSignErr::KeyGen)` will be
-/// returned.
+/// If the internal key generation process fails,
+/// `Err(CryptoSignErr::KeyGen)` will be returned.
 ///
 /// # Examples
 ///
@@ -33,13 +29,8 @@ pub enum CryptoSignErr {
 /// let mut sk = [0 as u8; crypto_sign_SECRETKEYBYTES];
 /// let pk = crypto_sign_keypair(sk).ok().expect("Key generation failed!");
 /// ```
-///
-pub fn crypto_sign_keypair(sk: &mut[u8])
+pub fn crypto_sign_keypair(sk: &mut[u8; ffi::crypto_sign_SECRETKEYBYTES])
     -> Result<[u8; ffi::crypto_sign_PUBLICKEYBYTES], CryptoSignErr> {
-
-    if sk.len() != ffi::crypto_sign_SECRETKEYBYTES {
-        return Err(CryptoSignErr::SecretKeyLength);
-    }
 
     let mut pk = [0 as u8; ffi::crypto_sign_PUBLICKEYBYTES];
 
@@ -60,9 +51,8 @@ pub fn crypto_sign_keypair(sk: &mut[u8])
 ///
 /// # Failures
 ///
-/// The function returns `CryptoSignErr::SecretKeyLength` if `sk.size()` is
-/// not `crypto_sign_SECRETKEYBYTES`, or `CryptoSignErr::Sign` if an internal
-/// error occurs during the sign operation.
+/// The function returns `CryptoSignErr::Sign` if an internal error occurs
+/// during the sign operation.
 ///
 /// # Examples
 ///
@@ -71,12 +61,8 @@ pub fn crypto_sign_keypair(sk: &mut[u8])
 /// ```
 /// let sm = crypto_sign(&m, &sk).ok().expect("Signature failed!");
 /// ```
-///
-pub fn crypto_sign(m: &[u8], sk: &[u8]) -> Result<Vec<u8>, CryptoSignErr> {
-
-    if sk.len() != ffi::crypto_sign_SECRETKEYBYTES {
-        return Err(CryptoSignErr::SecretKeyLength);
-    }
+pub fn crypto_sign(m: &[u8], sk: &[u8; ffi::crypto_sign_SECRETKEYBYTES])
+    -> Result<Vec<u8>, CryptoSignErr> {
 
     let mlen = m.len();
     let mut sm = vec![0 as u8; mlen+ffi::crypto_sign_BYTES];
@@ -103,10 +89,9 @@ pub fn crypto_sign(m: &[u8], sk: &[u8]) -> Result<Vec<u8>, CryptoSignErr> {
 /// # Failures
 ///
 /// If the signature fails verification, `CryptoSignErr::SignatureVerification`
-/// is returned. `CryptoSignErr::PublicKeyLength` is returned if `pk.size()` is
-/// not crypto_sign_PUBLICKEYBYTES, and `CryptoSignErr::SignedMessageLength`
-/// is returned if `sm` is too short to be a valid signed message (less than
-/// `crypto_sign_BYTES+1` bytes long).
+/// is returned. `CryptoSignErr::SignedMessageLength` is returned if `sm` is
+/// too short to be a valid signed message (less than `crypto_sign_BYTES+1`
+/// bytes long).
 ///
 /// # Examples
 ///
@@ -117,12 +102,8 @@ pub fn crypto_sign(m: &[u8], sk: &[u8]) -> Result<Vec<u8>, CryptoSignErr> {
 ///             .ok()
 ///             .expect("Signature verification failed!");
 /// ```
-pub fn crypto_sign_open(sm: &[u8], pk: &[u8])
+pub fn crypto_sign_open(sm: &[u8], pk: &[u8; ffi::crypto_sign_PUBLICKEYBYTES])
                         -> Result<Vec<u8>, CryptoSignErr> {
-
-    if pk.len() != ffi::crypto_sign_PUBLICKEYBYTES {
-        return Err(CryptoSignErr::PublicKeyLength);
-    }
 
     let smlen = sm.len();
 
@@ -161,14 +142,6 @@ mod tests {
     }
 
     #[test]
-    fn crypto_sign_keypair_invalidsklength() {
-        let mut sk = [0 as u8; ffi::crypto_sign_SECRETKEYBYTES-1];
-        let result = crypto_sign_keypair(&mut sk);
-        assert!(result.is_err());
-        assert!(result == Err(CryptoSignErr::SecretKeyLength));
-    }
-
-    #[test]
     fn crypto_sign_ok() {
         let sk = [0 as u8; ffi::crypto_sign_SECRETKEYBYTES];
         let m = [1 as u8, 2, 3, 4, 5];
@@ -178,15 +151,6 @@ mod tests {
         };
         assert_eq!(sm.len(), 5+ffi::crypto_sign_BYTES);
         assert_eq!(&sm[ffi::crypto_sign_BYTES .. ffi::crypto_sign_BYTES+5], m);
-    }
-
-    #[test]
-    fn crypto_sign_invalidsklength() {
-        let sk = [0 as u8; ffi::crypto_sign_SECRETKEYBYTES+1];
-        let m = [1 as u8];
-        let result = crypto_sign(&m, &sk);
-        assert!(result.is_err());
-        assert!(result == Err(CryptoSignErr::SecretKeyLength));
     }
 
     #[test]
@@ -209,15 +173,6 @@ mod tests {
             Err(e) => panic!(e),
         };
         assert_eq!(opened_m, m);
-    }
-
-    #[test]
-    fn crypto_sign_open_invalid_pk_len() {
-        let pk = [0 as u8; ffi::crypto_sign_PUBLICKEYBYTES+1];
-        let result = crypto_sign_open(&[0 as u8; ffi::crypto_sign_BYTES+1],
-                                      &pk);
-        assert!(result.is_err());
-        assert!(result == Err(CryptoSignErr::PublicKeyLength));
     }
 
     #[test]
