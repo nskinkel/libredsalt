@@ -1,7 +1,9 @@
 extern crate libc;
+extern crate rand;
 
 mod ffi;
 
+pub mod randombytes;
 pub mod crypto_sign;
 
 /// Returns true iff the two 16 byte strings are equivalent.
