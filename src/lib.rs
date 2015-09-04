@@ -132,14 +132,6 @@ pub fn crypto_secretbox_open(m: &mut[u8], c: &[u8], d: u64, n: &[u8],
     }
 }
 
-pub fn crypto_hash(out: &mut[u8], m: &[u8], n: u64) {
-    unsafe {
-        ffi::crypto_hash_sha512_tweet(
-            out.as_mut_ptr(), m.as_ptr(), n
-        );
-    }
-}
-
 pub fn crypto_sign_keypair(pk: &mut[u8], sk: &mut[u8]) {
     unsafe {
         ffi::crypto_sign_ed25519_tweet_keypair(
