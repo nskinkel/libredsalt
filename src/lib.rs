@@ -3,6 +3,7 @@ extern crate rand;
 
 mod ffi;
 
+pub mod crypto_secretbox;
 pub mod randombytes;
 
 pub fn crypto_verify_16(x: &[u8], y: &[u8]) {
