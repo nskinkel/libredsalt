@@ -115,23 +115,6 @@ pub fn crypto_box_open(m: &mut[u8], c: &[u8], d: u64, n: &[u8], y: &[u8],
     }
 }
 
-pub fn crypto_secretbox(c: &mut[u8], m: &[u8], d: u64, n: &[u8], k: &[u8]) {
-    unsafe {
-        ffi::crypto_secretbox_xsalsa20poly1305_tweet(
-            c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), k.as_ptr()
-        );
-    }
-}
-
-pub fn crypto_secretbox_open(m: &mut[u8], c: &[u8], d: u64, n: &[u8],
-                             k: &[u8]) {
-    unsafe {
-        ffi::crypto_secretbox_xsalsa20poly1305_tweet_open(
-            m.as_mut_ptr(), c.as_ptr(), d, n.as_ptr(), k.as_ptr()
-        );
-    }
-}
-
 pub fn crypto_hash(out: &mut[u8], m: &[u8], n: u64) {
     unsafe {
         ffi::crypto_hash_sha512_tweet(
