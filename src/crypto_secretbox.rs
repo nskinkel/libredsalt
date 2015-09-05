@@ -135,7 +135,7 @@ mod tests {
         let bad_n = [1 as u8; ffi::crypto_secretbox_NONCEBYTES];
         let bad_k = [1 as u8; ffi::crypto_secretbox_KEYBYTES];
         let mut bad_c = c.clone();
-        bad_c[0] = bad_c[0] ^ bad_c[0];
+        bad_c[0] = bad_c[0] ^ 1;
 
         let result = crypto_secretbox_open(&c, &bad_n, &k);
         assert!(result == Err(CryptoSecretBoxErr::SecretBoxOpen));
