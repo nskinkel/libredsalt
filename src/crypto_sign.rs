@@ -203,13 +203,12 @@ mod tests {
         let mut invalid_msg = sm.clone();
 
         // modify the signature
-        invalid_sig[0] = sm[0] ^ sm[0];
+        invalid_sig[0] = sm[0] ^ 1;
         // modify the message
         invalid_msg[ffi::crypto_sign_BYTES+1] =
-            invalid_msg[ffi::crypto_sign_BYTES+1] ^
-            invalid_msg[ffi::crypto_sign_BYTES+1];
+            invalid_msg[ffi::crypto_sign_BYTES+1] ^ 1;
         // modify the pk
-        invalid_pk[0] = invalid_pk[0] ^ invalid_pk[0];
+        invalid_pk[0] = invalid_pk[0] ^ 1;
 
         // attempt verification
         let result = crypto_sign_open(&invalid_sig, &pk);
