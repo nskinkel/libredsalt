@@ -3,6 +3,7 @@ extern crate rand;
 
 mod ffi;
 
+pub mod crypto_box;
 pub mod randombytes;
 
 pub fn crypto_verify_16(x: &[u8], y: &[u8]) {
@@ -50,67 +51,6 @@ pub fn crypto_scalarmult(q: &mut[u8], n: &[u8], p: &[u8]) {
 pub fn crypto_scalarmult_base(q: &mut[u8], n: &[u8]) {
     unsafe {
         ffi::crypto_scalarmult_curve25519_tweet_base(q.as_mut_ptr(), n.as_ptr());
-    }
-}
-
-
-#[test]
-fn test_crypto_box_keypair() {
-    let mut pk = [0u8; ffi::crypto_box_PUBLICKEYBYTES];
-    let mut sk = [0u8; ffi::crypto_box_SECRETKEYBYTES];
-    println!("rv: {:?}", crypto_box_keypair(&mut pk, &mut sk));
-    println!("pk: {:?}", pk);
-    println!("sk: {:?}", sk);
-}
-
-pub fn crypto_box_keypair(pk: &mut[u8], sk: &mut[u8]) -> i32 {
-    // TODO: Assert correctly sized slices.
-    unsafe {
-        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_keypair(pk.as_mut_ptr(), sk.as_mut_ptr())
-    }
-}
-
-pub fn crypto_box_beforenm(k: &mut[u8], y: &[u8], x: &[u8]) {
-    unsafe {
-        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_beforenm(
-            k.as_mut_ptr(), y.as_ptr(), x.as_ptr()
-        );
-    }
-}
-
-pub fn crypto_box_afternm(c: &mut[u8], m: &[u8], d: u64, n: &[u8],
-                          k: &[u8]) {
-    unsafe {
-        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_afternm(
-            c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), k.as_ptr()         
-        );
-    }
-}
-
-pub fn crypto_box_open_afternm(m: &mut[u8], c: &[u8], d: u64, n: &[u8],
-                               k: &[u8]) {
-    unsafe {
-        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_open_afternm(
-            m.as_mut_ptr(), c.as_ptr(), d, n.as_ptr(), k.as_ptr()
-        );
-    }
-}
-
-pub fn crypto_box(c: &mut[u8], m: &[u8], d: u64, n: &[u8], y: &[u8],
-                  x: &[u8]) {
-    unsafe {
-        ffi::crypto_box_curve25519xsalsa20poly1305_tweet(
-            c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), y.as_ptr(), x.as_ptr()
-        );
-    }
-}
-
-pub fn crypto_box_open(m: &mut[u8], c: &[u8], d: u64, n: &[u8], y: &[u8],
-                       x: &[u8]) {
-    unsafe {
-        ffi::crypto_box_curve25519xsalsa20poly1305_tweet_open(
-            m.as_mut_ptr(), c.as_ptr(), d, n.as_ptr(), y.as_ptr(), x.as_ptr()
-        );
     }
 }
 
