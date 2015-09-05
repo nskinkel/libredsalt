@@ -95,55 +95,43 @@ mod tests {
     use ffi;
     use super::*;
 
+    static C: [u8; ffi::crypto_onetimeauth_BYTES+3] =
+        [126, 79, 196, 241, 56, 117, 222, 2, 146, 56, 182, 245, 242, 134, 22,
+         3, 199, 60, 184];
+    static M: [u8; 3] = [1, 2, 3];
+    static N: [u8; ffi::crypto_secretbox_NONCEBYTES] =
+        [0; ffi::crypto_secretbox_NONCEBYTES];
+    static K: [u8; ffi::crypto_secretbox_KEYBYTES] =
+        [0; ffi::crypto_secretbox_KEYBYTES];
+
     #[test]
     fn crypto_secretbox_ok() {
-        let m = [1 as u8, 2, 3];
-        let n = [0 as u8; ffi::crypto_secretbox_NONCEBYTES];
-        let k = [0 as u8; ffi::crypto_secretbox_KEYBYTES];
-
-        let expected = [126 as u8, 79, 196, 241, 56, 117, 222, 2, 146, 56, 182,
-                        245, 242, 134, 22, 3, 199, 60, 184];
-
-        let ciphertext = match crypto_secretbox(&m, &n, &k) {
-            Ok(v) => v,
-            Err(e) => panic!(e),
-        };
-        assert!(ciphertext.iter().zip(expected.iter()).all(|(a,b)| a == b));
+        let c = crypto_secretbox(&M, &N, &K).ok().expect("failed!");
+        assert_eq!(c, C);
     }
 
     #[test]
     fn crypto_secretbox_open_ok() {
-        let expected = [1 as u8, 2, 3];
-        let n = [0 as u8; ffi::crypto_secretbox_NONCEBYTES];
-        let k = [0 as u8; ffi::crypto_secretbox_KEYBYTES];
-        let ciphertext = [126 as u8, 79, 196, 241, 56, 117, 222, 2, 146, 56,
-                          182, 245, 242, 134, 22, 3, 199, 60, 184];
-
-        let m = match crypto_secretbox_open(&ciphertext, &n, &k) {
-            Ok(v) => v,
-            Err(e) => panic!(e),
-        };
-        assert_eq!(m, &expected);
+        let m = crypto_secretbox_open(&C, &N, &K)
+                        .ok()
+                        .expect("failed!");
+        assert_eq!(m, &M);
     }
 
     #[test]
     fn crypto_secretbox_open_fail() {
-        let n = [0 as u8; ffi::crypto_secretbox_NONCEBYTES];
-        let k = [0 as u8; ffi::crypto_secretbox_KEYBYTES];
-        let c = [126 as u8, 79, 196, 241, 56, 117, 222, 2, 146, 56, 182, 245,
-                 242, 134, 22, 3, 199, 60, 184];
         let bad_n = [1 as u8; ffi::crypto_secretbox_NONCEBYTES];
         let bad_k = [1 as u8; ffi::crypto_secretbox_KEYBYTES];
-        let mut bad_c = c.clone();
+        let mut bad_c = C.clone();
         bad_c[0] = bad_c[0] ^ 1;
 
-        let result = crypto_secretbox_open(&c, &bad_n, &k);
+        let result = crypto_secretbox_open(&C, &bad_n, &K);
         assert!(result == Err(CryptoSecretBoxErr::SecretBoxOpen));
 
-        let result = crypto_secretbox_open(&c, &n, &bad_k);
+        let result = crypto_secretbox_open(&C, &N, &bad_k);
         assert!(result == Err(CryptoSecretBoxErr::SecretBoxOpen));
 
-        let result = crypto_secretbox_open(&bad_c, &n, &k);
+        let result = crypto_secretbox_open(&bad_c, &N, &K);
         assert!(result == Err(CryptoSecretBoxErr::SecretBoxOpen));
     }
 }
