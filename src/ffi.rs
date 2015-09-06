@@ -1,7 +1,7 @@
 #![allow(non_upper_case_globals)]
 #![allow(dead_code)]  // TODO: Remove this later.
 
-use libc::{size_t, c_int};
+use libc::{c_int};
 
 pub const crypto_auth_BYTES: usize = 32;
 pub const crypto_auth_KEYBYTES: usize = 32;
@@ -38,8 +38,8 @@ extern {
     pub fn crypto_verify_16_tweet(x: *const u8, y: *const u8) -> c_int;
     pub fn crypto_verify_32_tweet(x: *const u8, y: *const u8) -> c_int;
 
-    pub fn crypto_stream_xsalsa20_tweet(c: *mut u8, d: u64, n: *const u8, k: *const u8);
-    pub fn crypto_stream_xsalsa20_tweet_xor(c: *mut u8, m: *const u8, d: u64, n: *const u8, k: *const u8);
+    pub fn crypto_stream_xsalsa20_tweet(c: *mut u8, d: u64, n: *const u8, k: *const u8) -> c_int;
+    pub fn crypto_stream_xsalsa20_tweet_xor(c: *mut u8, m: *const u8, d: u64, n: *const u8, k: *const u8) -> c_int;
 
     pub fn crypto_onetimeauth_poly1305_tweet(out: *mut u8, m: *const u8, n: u64, k: *const u8) -> c_int;
     pub fn crypto_onetimeauth_poly1305_tweet_verify(h: *const u8, m: *const u8, n: u64, k: *const u8) -> c_int;
