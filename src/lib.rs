@@ -3,6 +3,7 @@ extern crate rand;
 
 mod ffi;
 
+pub mod crypto_scalarmult;
 pub mod randombytes;
 
 pub fn crypto_verify_16(x: &[u8], y: &[u8]) {
@@ -40,19 +41,6 @@ pub fn crypto_onetimeauth_verify(h: &[u8], m: &[u8], n: u64, k: &[u8]) {
         ffi::crypto_onetimeauth_poly1305_tweet_verify(h.as_ptr(), m.as_ptr(), n, k.as_ptr());
     }
 }
-
-pub fn crypto_scalarmult(q: &mut[u8], n: &[u8], p: &[u8]) {
-    unsafe {
-        ffi::crypto_scalarmult_curve25519_tweet(q.as_mut_ptr(), n.as_ptr(), p.as_ptr());
-    }
-}
-
-pub fn crypto_scalarmult_base(q: &mut[u8], n: &[u8]) {
-    unsafe {
-        ffi::crypto_scalarmult_curve25519_tweet_base(q.as_mut_ptr(), n.as_ptr());
-    }
-}
-
 
 #[test]
 fn test_crypto_box_keypair() {
