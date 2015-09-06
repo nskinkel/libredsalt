@@ -1,7 +1,7 @@
 #![allow(non_upper_case_globals)]
 #![allow(dead_code)]  // TODO: Remove this later.
 
-use libc::{size_t, c_int};
+use libc::{c_int};
 
 pub const crypto_auth_BYTES: usize = 32;
 pub const crypto_auth_KEYBYTES: usize = 32;

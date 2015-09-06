@@ -3,19 +3,8 @@ extern crate rand;
 
 mod ffi;
 
+pub mod crypto_verify;
 pub mod randombytes;
-
-pub fn crypto_verify_16(x: &[u8], y: &[u8]) {
-    unsafe {
-        ffi::crypto_verify_16_tweet(x.as_ptr(), y.as_ptr());
-    }
-}
-
-pub fn crypto_verify_32_tweet(x: &[u8], y: &[u8]) {
-    unsafe {
-        ffi::crypto_verify_32_tweet(x.as_ptr(), y.as_ptr());
-    }
-}
 
 pub fn crypto_stream(out: &mut[u8], d: u64, n: &[u8], k: &[u8]) {
     unsafe {
