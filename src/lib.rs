@@ -6,6 +6,7 @@ mod ffi;
 pub mod crypto_box;
 pub mod crypto_secretbox;
 pub mod crypto_scalarmult;
+pub mod crypto_onetimeauth;
 pub mod randombytes;
 pub mod crypto_hash;
 pub mod crypto_sign;
@@ -56,17 +57,5 @@ pub fn crypto_stream(out: &mut[u8], d: u64, n: &[u8], k: &[u8]) {
 pub fn crypto_stream_xor(c: &mut[u8], m: &[u8], d: u64, n: &[u8], k: &[u8]) {
     unsafe {
         ffi::crypto_stream_xsalsa20_tweet_xor(c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), k.as_ptr());
-    }
-}
-
-pub fn crypto_onetimeauth(out: &mut[u8], m: &[u8], n: u64, k: &[u8]) {
-    unsafe {
-        ffi::crypto_onetimeauth_poly1305_tweet(out.as_mut_ptr(), m.as_ptr(), n, k.as_ptr());
-    }
-}
-
-pub fn crypto_onetimeauth_verify(h: &[u8], m: &[u8], n: u64, k: &[u8]) {
-    unsafe {
-        ffi::crypto_onetimeauth_poly1305_tweet_verify(h.as_ptr(), m.as_ptr(), n, k.as_ptr());
     }
 }
