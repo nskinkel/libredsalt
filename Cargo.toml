@@ -2,7 +2,7 @@
 name = "tweetnacl_rs"
 version = "0.1.0"
 authors = ["David Johnston <dwtj@iastate.edu>",
-           "Nik Kinkel <nskinkel@iastate.edu"]
+           "Nik Kinkel <nskinkel@iastate.edu>"]
 links = "tweetnacl"
 build = "build.rs"
 

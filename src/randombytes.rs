@@ -8,5 +8,3 @@ pub unsafe extern fn randombytes(buf: *mut u8, nbytes: u64) {
     let mut bytes = slice::from_raw_parts_mut(buf, nbytes as usize);
     rng.fill_bytes(bytes);
 }
-
-
