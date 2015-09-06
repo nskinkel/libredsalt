@@ -10,7 +10,7 @@ pub enum CryptoSecretBoxErr {
 ///
 /// The `crypto_secretbox()` function encrypts and authenticates a message `m`
 /// using a secret key `k` and a nonce `n`. The `crypto_secretbox()` function
-/// returns the resulting ciphertext `c`. 
+/// returns the resulting ciphertext `c`.
 ///
 /// # Failures
 /// A `CryptoSecretBoxErr::SecretBox` is returned if an internal error occurs.
@@ -28,9 +28,9 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; ffi::crypto_secretbox_NONCEBYTES],
 -> Result<Vec<u8>, CryptoSecretBoxErr> {
 
     let mut padded_m = vec![0 as u8; ffi::crypto_secretbox_ZEROBYTES];
-    padded_m.extend(m.iter().clone());
+    padded_m.extend(m.iter().cloned());
     let mut c = vec![0 as u8; ffi::crypto_secretbox_BOXZEROBYTES +
-                              ffi::crypto_onetimeauth_BYTES + 
+                              ffi::crypto_onetimeauth_BYTES +
                               m.len()];
 
     unsafe {
@@ -42,7 +42,6 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; ffi::crypto_secretbox_NONCEBYTES],
                         k.as_ptr()) {
             0 => Ok(c[ffi::crypto_secretbox_BOXZEROBYTES..c.len()].to_vec()),
             _ => Err(CryptoSecretBoxErr::SecretBox),
-
         }
     }
 }
@@ -74,7 +73,7 @@ pub fn crypto_secretbox_open(c: &[u8],
 -> Result<Vec<u8>, CryptoSecretBoxErr> {
 
     let mut padded_c = vec![0 as u8; ffi::crypto_secretbox_BOXZEROBYTES];
-    padded_c.extend(c.iter().clone());
+    padded_c.extend(c.iter().cloned());
     let mut m = vec![0 as u8; padded_c.len()];
 
     unsafe {

@@ -5,16 +5,43 @@ mod ffi;
 
 pub mod crypto_secretbox;
 pub mod randombytes;
+pub mod crypto_hash;
+pub mod crypto_sign;
 
-pub fn crypto_verify_16(x: &[u8], y: &[u8]) {
+/// Returns true iff the two 16 byte strings are equivalent.
+///
+/// ```
+/// let x: [42u8; 16];
+/// let y: [42u8; 16];
+/// assert!(crypto_verify_16(x, y) == true);
+/// ```
+pub fn crypto_verify_16(x: &[u8], y: &[u8]) -> bool {
+    assert!(x.len() == 16, "`x` must be 16 bytes.");
+    assert!(y.len() == 16, "`y` must be 16 bytes.");
     unsafe {
-        ffi::crypto_verify_16_tweet(x.as_ptr(), y.as_ptr());
+        match ffi::crypto_verify_16_tweet(x.as_ptr(), y.as_ptr()) {
+            0 => true,
+            -1 => false,
+            _ => unreachable!("Unexpected value produced by `crypto_verify_16_tweet()`.")
+        }
     }
 }
 
-pub fn crypto_verify_32_tweet(x: &[u8], y: &[u8]) {
+/// Returns true iff the two 32 byte strings are equivalent.
+/// ```
+/// let x: [42u8; 32];
+/// let y: [42u8; 32];
+/// assert!(crypto_verify_32(x, y) == true);
+/// ```
+pub fn crypto_verify_32(x: &[u8], y: &[u8]) -> bool {
+    assert!(x.len() == 32, "`x` must be 32 bytes.");
+    assert!(y.len() == 32, "`y` must be 32 bytes.");
     unsafe {
-        ffi::crypto_verify_32_tweet(x.as_ptr(), y.as_ptr());
+        match ffi::crypto_verify_32_tweet(x.as_ptr(), y.as_ptr()) {
+            0 => true,
+            -1 => false,
+            _ => unreachable!("Unexpected value produced by `crypto_verify_32_tweet()`.")
+        }
     }
 }
 
@@ -83,7 +110,7 @@ pub fn crypto_box_afternm(c: &mut[u8], m: &[u8], d: u64, n: &[u8],
                           k: &[u8]) {
     unsafe {
         ffi::crypto_box_curve25519xsalsa20poly1305_tweet_afternm(
-            c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), k.as_ptr()         
+            c.as_mut_ptr(), m.as_ptr(), d, n.as_ptr(), k.as_ptr()
         );
     }
 }
@@ -111,40 +138,6 @@ pub fn crypto_box_open(m: &mut[u8], c: &[u8], d: u64, n: &[u8], y: &[u8],
     unsafe {
         ffi::crypto_box_curve25519xsalsa20poly1305_tweet_open(
             m.as_mut_ptr(), c.as_ptr(), d, n.as_ptr(), y.as_ptr(), x.as_ptr()
-        );
-    }
-}
-
-pub fn crypto_hash(out: &mut[u8], m: &[u8], n: u64) {
-    unsafe {
-        ffi::crypto_hash_sha512_tweet(
-            out.as_mut_ptr(), m.as_ptr(), n
-        );
-    }
-}
-
-pub fn crypto_sign_keypair(pk: &mut[u8], sk: &mut[u8]) {
-    unsafe {
-        ffi::crypto_sign_ed25519_tweet_keypair(
-            pk.as_mut_ptr(), sk.as_mut_ptr()
-        );
-    }
-}
-
-pub fn crypto_sign(sm: &mut[u8], smlen: &mut u64, m: &[u8], n: u64,
-                   sk: &[u8]) {
-    unsafe {
-        ffi::crypto_sign_ed25519_tweet(
-            sm.as_mut_ptr(), smlen, m.as_ptr(), n, sk.as_ptr()
-        );
-    }
-}
-
-pub fn crypto_sign_open(m: &mut[u8], mlen: &mut u64, sm: &[u8], n: u64,
-                        pk: &[u8]) {
-    unsafe {
-        ffi::crypto_sign_ed25519_tweet_open(
-            m.as_mut_ptr(), mlen, sm.as_ptr(), n, pk.as_ptr()
         );
     }
 }
