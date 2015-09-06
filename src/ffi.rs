@@ -1,7 +1,7 @@
 #![allow(non_upper_case_globals)]
 #![allow(dead_code)]  // TODO: Remove this later.
 
-use libc::{size_t, c_int};
+use libc::{c_int};
 
 pub const crypto_auth_BYTES: usize = 32;
 pub const crypto_auth_KEYBYTES: usize = 32;
@@ -94,6 +94,6 @@ extern {
         -> c_int;
 
     pub fn crypto_sign_ed25519_tweet_open(
-        m: *mut u8, mlen: *mut u64, sm: *const u8, n: u64, pk: *const u8)
-        -> c_int;
+        m: *mut u8, mlen: *mut u64, sm: *const u8, n: u64,
+        pk: *const u8) -> c_int;
 }
