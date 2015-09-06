@@ -68,9 +68,9 @@ pub fn crypto_box(m: &[u8],
                   pk: &[u8; ffi::crypto_box_PUBLICKEYBYTES],
                   sk: &[u8; ffi::crypto_box_SECRETKEYBYTES])
 -> Result<Vec<u8>, CryptoBoxErr> {
-    
+
     let mut padded_m = vec![0 as u8; ffi::crypto_box_ZEROBYTES];
-    padded_m.extend(m.iter().clone());
+    padded_m.extend(m.iter().cloned());
     let mut c = vec![0 as u8; padded_m.len()];
 
     unsafe {
@@ -108,7 +108,7 @@ pub fn crypto_box(m: &[u8],
 ///                                 &my_secret_key)
 ///                                     .ok()
 ///                                     .expect("Box Open Failed!");
-/// ```             
+/// ```
 ///
 pub fn crypto_box_open(c: &[u8],
                        n: &[u8; ffi::crypto_box_NONCEBYTES],
@@ -117,7 +117,7 @@ pub fn crypto_box_open(c: &[u8],
 -> Result<Vec<u8>, CryptoBoxErr> {
 
     let mut padded_c = vec![0 as u8; ffi::crypto_box_BOXZEROBYTES];
-    padded_c.extend(c.iter().clone());
+    padded_c.extend(c.iter().cloned());
     let mut m = vec![0 as u8; padded_c.len()];
 
     unsafe {
@@ -164,7 +164,7 @@ mod tests {
     #[test]
     #[allow(unused_variables)]
     fn crypto_box_keypair_ok() {
-        let mut sk = [0 as u8; ffi::crypto_box_SECRETKEYBYTES];        
+        let mut sk = [0 as u8; ffi::crypto_box_SECRETKEYBYTES];
         let pk = crypto_box_keypair(&mut sk).ok().expect("Keygen failed!");
     }
 
