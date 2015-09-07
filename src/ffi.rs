@@ -1,10 +1,4 @@
-#![allow(non_upper_case_globals)]
-#![allow(dead_code)]  // TODO: Remove this later.
-
 use libc::{c_int};
-
-pub const crypto_stream_KEYBYTES: usize = 32;
-pub const crypto_stream_NONCEBYTES: usize = 24;
 
 extern {
     pub fn crypto_verify_16_tweet(x: *const u8, y: *const u8) -> c_int;
@@ -21,18 +15,6 @@ extern {
 
     pub fn crypto_box_curve25519xsalsa20poly1305_tweet_keypair(
         pk: *mut u8, sk: *mut u8)
-        -> c_int;
-
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_beforenm(
-        k: *mut u8, y: *const u8, x: *const u8)
-        -> c_int;
-
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_afternm(
-        c: *mut u8, m: *const u8, d: u64, n: *const u8, k: *const u8)
-        -> c_int;
-
-    pub fn crypto_box_curve25519xsalsa20poly1305_tweet_open_afternm(
-        m: *mut u8, c: *const u8, d: u64, n: *const u8, k: *const u8)
         -> c_int;
 
     pub fn crypto_box_curve25519xsalsa20poly1305_tweet(
