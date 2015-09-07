@@ -1,4 +1,4 @@
-use crypto_onetimeauth;
+use crypto::onetimeauth;
 use ffi;
 
 pub const KEYBYTES:     usize = 32;
@@ -13,8 +13,8 @@ pub enum Error {
 
 /// Encrypt and authenticate a message.
 ///
-/// The `crypto_secretbox()` function encrypts and authenticates a message `m`
-/// using a secret key `k` and a nonce `n`. The `crypto_secretbox()` function
+/// The `secretbox()` function encrypts and authenticates a message `m`
+/// using a secret key `k` and a nonce `n`. The `secretbox()` function
 /// returns the resulting ciphertext `c`.
 ///
 /// # Examples
@@ -23,19 +23,21 @@ pub enum Error {
 /// `sk`:
 ///
 /// ```
-/// # use tweetnaclrs::crypto_secretbox::{crypto_secretbox};
+/// # use tweetnaclrs::crypto::secretbox;
 /// # let n = [0 as u8; 24];
 /// # let sk = [1 as u8; 32];
 /// # let m = [0 as u8];
-/// let ciphertext = crypto_secretbox(&m, &n, &sk);
+/// let ciphertext = secretbox::secretbox(&m, &n, &sk);
 /// ```
-pub fn crypto_secretbox(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
+pub fn secretbox(m: &[u8],
+                 n: &[u8; NONCEBYTES],
+                 k: &[u8; KEYBYTES])
 -> Vec<u8> {
 
     let mut padded_m = vec![0 as u8; ZEROBYTES];
     padded_m.extend(m.iter().cloned());
     let mut c = vec![0 as u8; BOXZEROBYTES +
-                              crypto_onetimeauth::BYTES +
+                              onetimeauth::BYTES +
                               m.len()];
 
     unsafe {
@@ -53,8 +55,8 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 
 /// Verify and decrypt a message.
 ///
-/// The `crypto_secretbox_open()` function verifies and decrypts a ciphertext
-/// `c` using a secret key `k` and a nonce `n`. The `crypto_secretbox_open()`
+/// The `secretbox_open()` function verifies and decrypts a ciphertext
+/// `c` using a secret key `k` and a nonce `n`. The `secretbox_open()`
 /// function returns the resulting plaintext `m`.
 ///
 /// # Failures
@@ -67,17 +69,15 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 /// `sk`:
 ///
 /// ```should_panic
-/// # use tweetnaclrs::crypto_secretbox::{crypto_secretbox_open};
+/// # use tweetnaclrs::crypto::secretbox;
 /// # let c = [1 as u8];
 /// # let n = [0 as u8; 24];
 /// # let sk = [1 as u8; 32];
-/// let plaintext = crypto_secretbox_open(&c, &n, &sk)
-///                        .ok()
-///                        .expect("Verification failed!");
+/// let plaintext = secretbox::open(&c, &n, &sk).ok().expect("Verification failed!");
 /// ```
-pub fn crypto_secretbox_open(c: &[u8],
-                             n: &[u8; NONCEBYTES],
-                             k: &[u8; KEYBYTES])
+pub fn open(c: &[u8],
+            n: &[u8; NONCEBYTES],
+            k: &[u8; KEYBYTES])
 -> Result<Vec<u8>, Error> {
 
     let mut padded_c = vec![0 as u8; BOXZEROBYTES];
@@ -100,10 +100,10 @@ pub fn crypto_secretbox_open(c: &[u8],
 
 #[cfg(test)]
 mod tests {
-    use crypto_onetimeauth;
+    use crypto::onetimeauth;
     use super::*;
 
-    static C: [u8; crypto_onetimeauth::BYTES+3] =
+    static C: [u8; onetimeauth::BYTES+3] =
         [126, 79, 196, 241, 56, 117, 222, 2, 146, 56, 182, 245, 242, 134, 22,
          3, 199, 60, 184];
     static M: [u8; 3] = [1, 2, 3];
@@ -111,32 +111,32 @@ mod tests {
     static K: [u8; KEYBYTES] = [0; KEYBYTES];
 
     #[test]
-    fn crypto_secretbox_ok() {
-        assert_eq!(crypto_secretbox(&M, &N, &K), C);
+    fn secretbox_ok() {
+        assert_eq!(secretbox(&M, &N, &K), C);
     }
 
     #[test]
-    fn crypto_secretbox_open_ok() {
-        let m = crypto_secretbox_open(&C, &N, &K)
+    fn secretbox_open_ok() {
+        let m = open(&C, &N, &K)
                         .ok()
                         .expect("failed!");
         assert_eq!(m, &M);
     }
 
     #[test]
-    fn crypto_secretbox_open_fail() {
+    fn secretbox_open_fail() {
         let bad_n = [1 as u8; NONCEBYTES];
         let bad_k = [1 as u8; KEYBYTES];
         let mut bad_c = C.clone();
         bad_c[0] = bad_c[0] ^ 1;
 
-        let result = crypto_secretbox_open(&C, &bad_n, &K);
+        let result = open(&C, &bad_n, &K);
         assert!(result == Err(Error::Verify));
 
-        let result = crypto_secretbox_open(&C, &N, &bad_k);
+        let result = open(&C, &N, &bad_k);
         assert!(result == Err(Error::Verify));
 
-        let result = crypto_secretbox_open(&bad_c, &N, &K);
+        let result = open(&bad_c, &N, &K);
         assert!(result == Err(Error::Verify));
     }
 }

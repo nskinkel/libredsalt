@@ -5,7 +5,7 @@ pub const NONCEBYTES:   usize = 24;
 
 /// Produce a byte stream as a function of a key and a nonce.
 ///
-/// The `crypto_stream()` function produces a clen-byte stream `c` as a
+/// The `stream()` function produces a `clen`-byte stream `c` as a
 /// function of a secret key `k` and a nonce `n`.
 ///
 /// # Examples
@@ -13,13 +13,15 @@ pub const NONCEBYTES:   usize = 24;
 /// Generate a 32-byte stream using a nonce `n` and a secret key `sk`:
 ///
 /// ```
-/// # use tweetnaclrs::crypto_stream::{crypto_stream};
+/// # use tweetnaclrs::crypto::stream;
 /// # let n = [0 as u8; 24];
 /// # let sk = [1 as u8; 32];
 /// let clen: u64 = 32;
-/// let cstream = crypto_stream(clen, &n, &sk);
+/// let cstream = stream::stream(clen, &n, &sk);
 /// ```
-pub fn crypto_stream(clen: u64, n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
+pub fn stream(clen: u64,
+              n: &[u8; NONCEBYTES],
+              k: &[u8; KEYBYTES])
 -> Vec<u8> {
 
     let mut out = vec![0 as u8; clen as usize];
@@ -38,13 +40,13 @@ pub fn crypto_stream(clen: u64, n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 
 /// Encrypt a message using a secret key and a nonce.
 ///
-/// The `crypto_stream_xor()` function encrypts a message `m` using a secret
-/// key `k` and a nonce `n`. The `crypto_stream_xor()` function returns the
+/// The `xor()` function encrypts a message `m` using a secret
+/// key `k` and a nonce `n`. The `xor()` function returns the
 /// ciphertext `c`.
 ///
-/// The `crypto_stream_xor()` function guarantees that the ciphertext has the
+/// The `xor()` function guarantees that the ciphertext has the
 /// same length as the plaintext, and is the plaintext xor the output of
-/// `crypto_stream()`. Consequently `crypto_stream_xor()` can also be used to
+/// `stream()`. Consequently `xor()` can also be used to
 /// decrypt. 
 ///
 /// # Examples
@@ -52,13 +54,15 @@ pub fn crypto_stream(clen: u64, n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 /// Encrypt a message `m` with a key `k` and a nonce `n`:
 ///
 /// ```
-/// # use tweetnaclrs::crypto_stream::{crypto_stream_xor};
+/// # use tweetnaclrs::crypto::stream;
 /// # let n = [1 as u8; 24];
 /// # let k = [2 as u8; 32];
 /// let m = [1 as u8, 2, 3];
-/// let ciphertext = crypto_stream_xor(&m, &n, &k);
+/// let ciphertext = stream::xor(&m, &n, &k);
 /// ```
-pub fn crypto_stream_xor(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
+pub fn xor(m: &[u8],
+           n: &[u8; NONCEBYTES],
+           k: &[u8; KEYBYTES])
 -> Vec<u8> {
 
     let mut c = vec![0 as u8; m.len()];
@@ -96,15 +100,15 @@ mod tests {
                           216, 107, 54, 100, 122, 120, 205, 87, 27, 71, 46];
 
     #[test]
-    fn crypto_stream_ok() {
-        assert_eq!(crypto_stream(32, &N, &K), C);
+    fn stream_ok() {
+        assert_eq!(stream(32, &N, &K), C);
     }
 
     #[test]
-    fn crypto_stream_xor_ok() {
-        let c = crypto_stream_xor(&M, &N, &K);
+    fn xor_ok() {
+        let c = xor(&M, &N, &K);
         assert_eq!(c, X);
-        let m = crypto_stream_xor(&c, &N, &K);
+        let m = xor(&c, &N, &K);
         assert_eq!(m, M);
     }
 }

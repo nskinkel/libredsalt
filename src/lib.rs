@@ -3,13 +3,15 @@ extern crate rand;
 
 mod ffi;
 
-pub mod crypto_box;
-pub mod crypto_hash;
-pub mod crypto_onetimeauth;
-pub mod crypto_scalarmult;
-pub mod crypto_secretbox;
-pub mod crypto_sign;
-pub mod crypto_stream;
-pub mod crypto_verify;
+pub mod crypto {
+    pub mod cbox;
+    pub mod hash;
+    pub mod onetimeauth;
+    pub mod scalarmult;
+    pub mod secretbox;
+    pub mod sign;
+    pub mod stream;
+    pub mod verify;
+}
 
 pub mod randombytes;
