@@ -23,8 +23,10 @@ pub enum Error {
 /// Generate a signing keypair:
 ///
 /// ```
+/// # use tweetnaclrs::crypto_sign;
+/// # use tweetnaclrs::crypto_sign::{crypto_sign_keypair};
 /// let mut sk = [0 as u8; crypto_sign::SECRETKEYBYTES];
-/// let pk = crypto_sign_keypair(&sk);
+/// let pk = crypto_sign_keypair(&mut sk);
 /// ```
 pub fn crypto_sign_keypair(sk: &mut[u8; SECRETKEYBYTES])
 -> [u8; PUBLICKEYBYTES] {
@@ -48,10 +50,13 @@ pub fn crypto_sign_keypair(sk: &mut[u8; SECRETKEYBYTES])
 ///
 /// # Examples
 ///
-/// Sign a message:
+/// Sign a message `m` using a secret key `sk`:
 ///
 /// ```
-/// let sm = crypto_sign(&m, &sk);
+/// # use tweetnaclrs::crypto_sign::{crypto_sign};
+/// # let sk = [0 as u8; 64];
+/// let m = b"I accept the offer.";
+/// let sm = crypto_sign(m, &sk);
 /// ```
 pub fn crypto_sign(m: &[u8], sk: &[u8; SECRETKEYBYTES]) -> Vec<u8> {
 
@@ -85,9 +90,12 @@ pub fn crypto_sign(m: &[u8], sk: &[u8; SECRETKEYBYTES]) -> Vec<u8> {
 ///
 /// # Examples
 ///
-/// Verify a message signature:
+/// Verify the signature of message `sm` with public key `pk`:
 ///
-/// ```
+/// ```should_panic
+/// # use tweetnaclrs::crypto_sign::{crypto_sign_open};
+/// # let sm = [0 as u8; 65];
+/// # let pk = [1 as u8; 32];
 /// let m = crypto_sign_open(&sm, &pk)
 ///             .ok()
 ///             .expect("Signature verification failed!");

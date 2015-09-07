@@ -13,8 +13,9 @@ pub const BYTES: usize = 64;
 /// Hash a simple message:
 ///
 /// ```
-/// let m = [1 as u8, 2, 3];
-/// let hashed = crypto_hash(&m);
+/// # use tweetnaclrs::crypto_hash::{crypto_hash};
+/// let m = b"hello";
+/// let h = crypto_hash(m);
 /// ```
 pub fn crypto_hash(m: &[u8]) -> [u8; BYTES] {
 

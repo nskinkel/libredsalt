@@ -14,7 +14,14 @@ use ffi;
 /// # Examples
 ///
 /// ```
-/// let equal = crypto_verify_16(&x, &y);
+/// # use tweetnaclrs::crypto_verify::{crypto_verify_16};
+/// let x = [1 as u8; 16];
+/// let y = [2 as u8; 16];
+/// if crypto_verify_16(&x, &y) {
+///     println!("Equal!");
+/// } else {
+///     println!("Not equal!");
+/// }
 /// ```
 pub fn crypto_verify_16(x: &[u8; 16], y: &[u8; 16]) -> bool {
     unsafe {
@@ -40,7 +47,14 @@ pub fn crypto_verify_16(x: &[u8; 16], y: &[u8; 16]) -> bool {
 /// # Examples
 ///
 /// ```
-/// let equal = crypto_verify_31(&x, &y);
+/// # use tweetnaclrs::crypto_verify::{crypto_verify_32};
+/// let x = [1 as u8; 32];
+/// let y = [2 as u8; 32];
+/// if crypto_verify_32(&x, &y) {
+///     println!("Equal!");
+/// } else {
+///     println!("Not equal!");
+/// }
 /// ```
 pub fn crypto_verify_32(x: &[u8; 32], y: &[u8; 32]) -> bool {
     unsafe {

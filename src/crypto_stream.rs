@@ -10,10 +10,14 @@ pub const NONCEBYTES:   usize = 24;
 ///
 /// # Examples
 ///
-/// Generating a 32-byte stream:
+/// Generate a 32-byte stream using a nonce `n` and a secret key `sk`:
 ///
 /// ```
-/// let c = crypto_stream(32, &nonce, &key);
+/// # use tweetnaclrs::crypto_stream::{crypto_stream};
+/// # let n = [0 as u8; 24];
+/// # let sk = [1 as u8; 32];
+/// let clen: u64 = 32;
+/// let cstream = crypto_stream(clen, &n, &sk);
 /// ```
 pub fn crypto_stream(clen: u64, n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 -> Vec<u8> {
@@ -45,11 +49,14 @@ pub fn crypto_stream(clen: u64, n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 ///
 /// # Examples
 ///
-/// Encrypt a message with a key `k` and a nonce `n`:
+/// Encrypt a message `m` with a key `k` and a nonce `n`:
 ///
 /// ```
+/// # use tweetnaclrs::crypto_stream::{crypto_stream_xor};
+/// # let n = [1 as u8; 24];
+/// # let k = [2 as u8; 32];
 /// let m = [1 as u8, 2, 3];
-/// let ciphertext = crypto_stream_xor(&m, &nonce, &key);
+/// let ciphertext = crypto_stream_xor(&m, &n, &k);
 /// ```
 pub fn crypto_stream_xor(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 -> Vec<u8> {

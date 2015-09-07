@@ -23,8 +23,10 @@ pub enum Error {
 /// Generating a keypair:
 ///
 /// ```
+/// # use tweetnaclrs::crypto_box;
+///
 /// let mut sk = [0 as u8; crypto_box::SECRETKEYBYTES];
-/// let pk = crypto_box_keypair(&mut sk).ok().expect("Keypair failed!");
+/// let pk = crypto_box::crypto_box_keypair(&mut sk);
 /// ```
 pub fn crypto_box_keypair(sk: &mut [u8; SECRETKEYBYTES])
 -> [u8; PUBLICKEYBYTES] {
@@ -52,8 +54,16 @@ pub fn crypto_box_keypair(sk: &mut [u8; SECRETKEYBYTES])
 /// Encrypting a message:
 ///
 /// ```
+/// # use tweetnaclrs::crypto_box;
+/// # use tweetnaclrs::crypto_box::{crypto_box};
+/// # let nonce = [0 as u8; crypto_box::NONCEBYTES];
+/// # let my_secret_key = [0 as u8; crypto_box::SECRETKEYBYTES];
+/// # let their_public_key = [0 as u8; crypto_box::PUBLICKEYBYTES];
+///
+/// let plaintext = [1 as u8, 2, 3];
+///
 /// let ciphertext = crypto_box(&plaintext, &nonce, &their_public_key,
-///                             &my_secret_key).ok().expect("Box Failed!");
+///                             &my_secret_key);
 /// ```
 pub fn crypto_box(m:  &[u8],
                   n:  &[u8; NONCEBYTES],
@@ -95,13 +105,20 @@ pub fn crypto_box(m:  &[u8],
 ///
 /// Verify and decrypt a message:
 ///
-/// ```
+/// ```should_panic
+/// # use tweetnaclrs::crypto_box;
+/// # use tweetnaclrs::crypto_box::{crypto_box_open};
+/// # let nonce = [0 as u8; crypto_box::NONCEBYTES];
+/// # let their_public_key = [0 as u8; crypto_box::PUBLICKEYBYTES];
+/// # let my_secret_key = [0 as u8; crypto_box::SECRETKEYBYTES];
+/// # let ciphertext = [1 as u8; 10];
+///
 /// let plaintext = crypto_box_open(&ciphertext, &nonce, &their_public_key,
 ///                                 &my_secret_key)
-///                                     .ok()
-///                                     .expect("Verification Failed!");
-/// ```
+///                     .ok()
+///                     .expect("Verification failed!");
 ///
+/// ```
 pub fn crypto_box_open(c:  &[u8],
                        n:  &[u8; NONCEBYTES],
                        pk: &[u8; PUBLICKEYBYTES],

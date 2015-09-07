@@ -19,10 +19,15 @@ pub enum Error {
 ///
 /// # Examples
 ///
-/// Encrypt and authenticate a message `m`:
+/// Encrypt and authenticate a message `m` using a nonce `n` and a secret key
+/// `sk`:
 ///
 /// ```
-/// let ciphertext = crypto_secretbox(&plaintext, &nonce, &key);
+/// # use tweetnaclrs::crypto_secretbox::{crypto_secretbox};
+/// # let n = [0 as u8; 24];
+/// # let sk = [1 as u8; 32];
+/// # let m = [0 as u8];
+/// let ciphertext = crypto_secretbox(&m, &n, &sk);
 /// ```
 pub fn crypto_secretbox(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 -> Vec<u8> {
@@ -58,10 +63,15 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
 ///
 /// # Examples
 ///
-/// Verify and decrypt a ciphertext:
+/// Verify and decrypt a ciphertext `c` using a nonce `n` and a secret key
+/// `sk`:
 ///
-/// ```
-/// let plaintext = crypto_secretbox_open(&ciphertext, &nonce, &key)
+/// ```should_panic
+/// # use tweetnaclrs::crypto_secretbox::{crypto_secretbox_open};
+/// # let c = [1 as u8];
+/// # let n = [0 as u8; 24];
+/// # let sk = [1 as u8; 32];
+/// let plaintext = crypto_secretbox_open(&c, &n, &sk)
 ///                        .ok()
 ///                        .expect("Verification failed!");
 /// ```

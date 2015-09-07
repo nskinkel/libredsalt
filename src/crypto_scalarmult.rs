@@ -13,7 +13,10 @@ pub const SCALARBYTES:  usize = 32;
 /// Multiply Bob's public key by Alice's secret key to obtain a shared secret:
 ///
 /// ```
-/// let shared_secret = crypto_scalarmult(alice_sk, bob_pk);
+/// # use tweetnaclrs::crypto_scalarmult::{crypto_scalarmult};
+/// # let alice_sk = [0 as u8; 32];
+/// # let bob_pk = [1 as u8; 32];
+/// let shared_secret = crypto_scalarmult(&alice_sk, &bob_pk);
 /// ```
 pub fn crypto_scalarmult(n: &[u8; SCALARBYTES], p: &[u8; BYTES])
 -> [u8; BYTES] {

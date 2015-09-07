@@ -11,10 +11,14 @@ pub const KEYBYTES: usize = 32;
 ///
 /// # Examples
 ///
-/// Authenticate a message:
+/// Authenticate a message `m` with a secret key `k`:
 ///
 /// ```
-/// let auth = crypto_onetimeauth(&m, &k);
+/// # use tweetnaclrs::crypto_onetimeauth;
+/// # use tweetnaclrs::crypto_onetimeauth::{crypto_onetimeauth};
+/// # let k = [0 as u8; crypto_onetimeauth::KEYBYTES];
+/// let m = b"attack at midnight";
+/// let auth = crypto_onetimeauth(m, &k);
 /// ```
 pub fn crypto_onetimeauth(m: &[u8], k: &[u8; KEYBYTES]) -> [u8; BYTES] {
 
@@ -43,8 +47,19 @@ pub fn crypto_onetimeauth(m: &[u8], k: &[u8; KEYBYTES]) -> [u8; BYTES] {
 ///
 /// # Examples
 ///
+/// Verify an authenticator `a` for a message `m` under a secret key `k`:
+///
 /// ```
-/// let verified = crypto_onetimeauth_verify(&a, &m, &k);
+/// # use tweetnaclrs::crypto_onetimeauth;
+/// # use tweetnaclrs::crypto_onetimeauth::{crypto_onetimeauth_verify};
+/// # let k = [0 as u8; crypto_onetimeauth::KEYBYTES];
+/// # let a = [1 as u8; crypto_onetimeauth::BYTES];
+/// # let m = [0 as u8; 1];
+/// if crypto_onetimeauth_verify(&a, &m, &k) {
+///     println!("Verified!");
+/// } else {
+///     println!("Verification failed!");
+/// }
 /// ```
 pub fn crypto_onetimeauth_verify(a: &[u8; BYTES],
                                  m: &[u8],
