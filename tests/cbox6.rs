@@ -27,7 +27,7 @@ fn cbox6() {
 
         let between = Range::new(0, c.len());
         let idx = between.ind_sample(&mut rng);
-        c[idx] = rng.gen::<u8>();
+        c[idx] ^= 1;
 
         let result = cbox::open(&c, &nonce,  &alicepk, &bobsk);
         assert!(result == Err(cbox::Error::Verify));
