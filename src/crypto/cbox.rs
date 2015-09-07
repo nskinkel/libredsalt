@@ -89,9 +89,9 @@ pub fn cbox(m:  &[u8],
 
 /// Verify and decrypt a ciphertext.
 ///
-/// The `cbox_open()` function verifies and decrypts a ciphertext `c`
+/// The `open()` function verifies and decrypts a ciphertext `c`
 /// using the receiver's secret key `sk`, the sender's public key `pk`, and a
-/// nonce `n`. The `cbox_open()` function returns the resulting plaintext `m`.
+/// nonce `n`. The `open()` function returns the resulting plaintext `m`.
 ///
 /// # Failures
 ///
