@@ -6,13 +6,6 @@ use libc::{c_int};
 pub const crypto_auth_BYTES: usize = 32;
 pub const crypto_auth_KEYBYTES: usize = 32;
 
-pub const crypto_box_PUBLICKEYBYTES: usize = 32;
-pub const crypto_box_SECRETKEYBYTES: usize = 32;
-pub const crypto_box_NONCEBYTES: usize = 24;
-pub const crypto_box_ZEROBYTES: usize = 32;
-pub const crypto_box_BOXZEROBYTES: usize = 16;
-pub const crypto_box_BEFORENMBYTES: usize = 32;
-
 pub const crypto_hash_BYTES: usize = 64;
 
 pub const crypto_onetimeauth_BYTES: usize = 16;

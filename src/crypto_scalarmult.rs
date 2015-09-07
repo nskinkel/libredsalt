@@ -70,21 +70,22 @@ pub fn crypto_scalarmult_base(n: &[u8; ffi::crypto_scalarmult_SCALARBYTES])
 #[cfg(test)]
 mod tests {
     use ffi;
+    use crypto_box;
     use super::*;
 
-    static ALICE_SK: [u8; ffi::crypto_box_SECRETKEYBYTES] =
+    static ALICE_SK: [u8; crypto_box::SECRETKEYBYTES] =
         [57, 205, 241, 233, 180, 183, 151, 187, 107, 78, 102, 249, 229, 237,
          84, 15, 141, 184, 171, 156, 67, 151, 50, 70, 39, 6, 151, 96, 133, 35,
          153, 107];
-    static ALICE_PK: [u8; ffi::crypto_box_PUBLICKEYBYTES] =
+    static ALICE_PK: [u8; crypto_box::PUBLICKEYBYTES] =
         [69, 160, 229, 23, 37, 18, 235, 18, 172, 96, 127, 27, 116, 184, 29,
          126, 110, 167, 201, 252, 47, 24, 75, 52, 37, 36, 22, 233, 195, 126,
          120, 112];
-    static BOB_SK: [u8; ffi::crypto_box_SECRETKEYBYTES] =
+    static BOB_SK: [u8; crypto_box::SECRETKEYBYTES] =
         [176, 134, 132, 212, 9, 176, 83, 50, 95, 0, 85, 176, 31, 248, 219,
          254, 242, 213, 159, 137, 52, 90, 244, 151, 223, 87, 255, 68, 127,
          106, 213, 79];
-    static BOB_PK: [u8; ffi::crypto_box_PUBLICKEYBYTES] =
+    static BOB_PK: [u8; crypto_box::PUBLICKEYBYTES] =
         [160, 181, 63, 165, 91, 192, 71, 127, 69, 218, 113, 100, 33, 110, 128,
          153, 39, 10, 84, 122, 221, 156, 231, 102, 143, 63, 64, 70, 223, 136,
          134, 94];

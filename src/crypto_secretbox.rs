@@ -83,7 +83,7 @@ pub fn crypto_secretbox_open(c: &[u8],
                         padded_c.len() as u64,
                         n.as_ptr(),
                         k.as_ptr()) {
-            0 => Ok(m[ffi::crypto_box_ZEROBYTES..m.len()].to_vec()),
+            0 => Ok(m[ffi::crypto_secretbox_ZEROBYTES..m.len()].to_vec()),
             _ => Err(CryptoSecretBoxErr::SecretBoxOpen),
         }
     }
