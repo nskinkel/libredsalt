@@ -3,10 +3,6 @@
 
 use libc::{c_int};
 
-pub const crypto_sign_PUBLICKEYBYTES: usize = 32;
-pub const crypto_sign_SECRETKEYBYTES: usize = 64;
-pub const crypto_sign_BYTES: usize = 64;
-
 pub const crypto_stream_KEYBYTES: usize = 32;
 pub const crypto_stream_NONCEBYTES: usize = 24;
 
