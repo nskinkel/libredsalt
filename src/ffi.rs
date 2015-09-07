@@ -3,17 +3,6 @@
 
 use libc::{c_int};
 
-pub const crypto_auth_BYTES: usize = 32;
-pub const crypto_auth_KEYBYTES: usize = 32;
-
-pub const crypto_hash_BYTES: usize = 64;
-
-pub const crypto_onetimeauth_BYTES: usize = 16;
-pub const crypto_onetimeauth_KEYBYTES: usize = 32;
-
-pub const crypto_scalarmult_BYTES: usize = 32;
-pub const crypto_scalarmult_SCALARBYTES: usize = 32;
-
 pub const crypto_secretbox_KEYBYTES: usize = 32;
 pub const crypto_secretbox_NONCEBYTES: usize = 24;
 pub const crypto_secretbox_ZEROBYTES: usize = 32;
@@ -25,7 +14,6 @@ pub const crypto_sign_BYTES: usize = 64;
 
 pub const crypto_stream_KEYBYTES: usize = 32;
 pub const crypto_stream_NONCEBYTES: usize = 24;
-
 
 extern {
     pub fn crypto_verify_16_tweet(x: *const u8, y: *const u8) -> c_int;

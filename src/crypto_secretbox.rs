@@ -1,3 +1,4 @@
+use crypto_onetimeauth;
 use ffi;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -30,7 +31,7 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; ffi::crypto_secretbox_NONCEBYTES],
     let mut padded_m = vec![0 as u8; ffi::crypto_secretbox_ZEROBYTES];
     padded_m.extend(m.iter().cloned());
     let mut c = vec![0 as u8; ffi::crypto_secretbox_BOXZEROBYTES +
-                              ffi::crypto_onetimeauth_BYTES +
+                              crypto_onetimeauth::BYTES +
                               m.len()];
 
     unsafe {
@@ -91,10 +92,11 @@ pub fn crypto_secretbox_open(c: &[u8],
 
 #[cfg(test)]
 mod tests {
+    use crypto_onetimeauth;
     use ffi;
     use super::*;
 
-    static C: [u8; ffi::crypto_onetimeauth_BYTES+3] =
+    static C: [u8; crypto_onetimeauth::BYTES+3] =
         [126, 79, 196, 241, 56, 117, 222, 2, 146, 56, 182, 245, 242, 134, 22,
          3, 199, 60, 184];
     static M: [u8; 3] = [1, 2, 3];
