@@ -1,9 +1,14 @@
+use crypto_onetimeauth;
 use ffi;
 
+pub const KEYBYTES:     usize = 32;
+pub const NONCEBYTES:   usize = 24;
+pub const ZEROBYTES:    usize = 32;
+pub const BOXZEROBYTES: usize = 16;
+
 #[derive(Debug, Eq, PartialEq)]
-pub enum CryptoSecretBoxErr {
-    SecretBox,
-    SecretBoxOpen,
+pub enum Error {
+    Verify,
 }
 
 /// Encrypt and authenticate a message.
@@ -12,9 +17,6 @@ pub enum CryptoSecretBoxErr {
 /// using a secret key `k` and a nonce `n`. The `crypto_secretbox()` function
 /// returns the resulting ciphertext `c`.
 ///
-/// # Failures
-/// A `CryptoSecretBoxErr::SecretBox` is returned if an internal error occurs.
-///
 /// # Examples
 ///
 /// Encrypt and authenticate a message `m`:
@@ -22,15 +24,13 @@ pub enum CryptoSecretBoxErr {
 /// ```
 /// let ciphertext = crypto_secretbox(&plaintext, &nonce, &key);
 /// ```
-///
-pub fn crypto_secretbox(m: &[u8], n: &[u8; ffi::crypto_secretbox_NONCEBYTES],
-                        k: &[u8; ffi::crypto_secretbox_KEYBYTES])
--> Result<Vec<u8>, CryptoSecretBoxErr> {
+pub fn crypto_secretbox(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
+-> Vec<u8> {
 
-    let mut padded_m = vec![0 as u8; ffi::crypto_secretbox_ZEROBYTES];
+    let mut padded_m = vec![0 as u8; ZEROBYTES];
     padded_m.extend(m.iter().cloned());
-    let mut c = vec![0 as u8; ffi::crypto_secretbox_BOXZEROBYTES +
-                              ffi::crypto_onetimeauth_BYTES +
+    let mut c = vec![0 as u8; BOXZEROBYTES +
+                              crypto_onetimeauth::BYTES +
                               m.len()];
 
     unsafe {
@@ -40,8 +40,8 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; ffi::crypto_secretbox_NONCEBYTES],
                         padded_m.len() as u64,
                         n.as_ptr(),
                         k.as_ptr()) {
-            0 => Ok(c[ffi::crypto_secretbox_BOXZEROBYTES..c.len()].to_vec()),
-            _ => Err(CryptoSecretBoxErr::SecretBox),
+            0 => c[BOXZEROBYTES..].to_vec(),
+            _ => unreachable!("Internal error."),
         }
     }
 }
@@ -54,8 +54,7 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; ffi::crypto_secretbox_NONCEBYTES],
 ///
 /// # Failures
 ///
-/// A `CryptoSecretBoxErr::SecretBoxOpen` is returned if the ciphertext fails
-/// verification.
+/// An `Error::Verify` is returned if the ciphertext fails verification.
 ///
 /// # Examples
 ///
@@ -66,13 +65,12 @@ pub fn crypto_secretbox(m: &[u8], n: &[u8; ffi::crypto_secretbox_NONCEBYTES],
 ///                        .ok()
 ///                        .expect("Verification failed!");
 /// ```
-///
 pub fn crypto_secretbox_open(c: &[u8],
-                             n: &[u8; ffi::crypto_secretbox_NONCEBYTES],
-                             k: &[u8; ffi::crypto_secretbox_KEYBYTES])
--> Result<Vec<u8>, CryptoSecretBoxErr> {
+                             n: &[u8; NONCEBYTES],
+                             k: &[u8; KEYBYTES])
+-> Result<Vec<u8>, Error> {
 
-    let mut padded_c = vec![0 as u8; ffi::crypto_secretbox_BOXZEROBYTES];
+    let mut padded_c = vec![0 as u8; BOXZEROBYTES];
     padded_c.extend(c.iter().cloned());
     let mut m = vec![0 as u8; padded_c.len()];
 
@@ -83,30 +81,28 @@ pub fn crypto_secretbox_open(c: &[u8],
                         padded_c.len() as u64,
                         n.as_ptr(),
                         k.as_ptr()) {
-            0 => Ok(m[ffi::crypto_box_ZEROBYTES..m.len()].to_vec()),
-            _ => Err(CryptoSecretBoxErr::SecretBoxOpen),
+            0  => Ok(m[ZEROBYTES..].to_vec()),
+            -1 => Err(Error::Verify),
+            _  => unreachable!("Internal error."),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use ffi;
+    use crypto_onetimeauth;
     use super::*;
 
-    static C: [u8; ffi::crypto_onetimeauth_BYTES+3] =
+    static C: [u8; crypto_onetimeauth::BYTES+3] =
         [126, 79, 196, 241, 56, 117, 222, 2, 146, 56, 182, 245, 242, 134, 22,
          3, 199, 60, 184];
     static M: [u8; 3] = [1, 2, 3];
-    static N: [u8; ffi::crypto_secretbox_NONCEBYTES] =
-        [0; ffi::crypto_secretbox_NONCEBYTES];
-    static K: [u8; ffi::crypto_secretbox_KEYBYTES] =
-        [0; ffi::crypto_secretbox_KEYBYTES];
+    static N: [u8; NONCEBYTES] = [0; NONCEBYTES];
+    static K: [u8; KEYBYTES] = [0; KEYBYTES];
 
     #[test]
     fn crypto_secretbox_ok() {
-        let c = crypto_secretbox(&M, &N, &K).ok().expect("failed!");
-        assert_eq!(c, C);
+        assert_eq!(crypto_secretbox(&M, &N, &K), C);
     }
 
     #[test]
@@ -119,18 +115,18 @@ mod tests {
 
     #[test]
     fn crypto_secretbox_open_fail() {
-        let bad_n = [1 as u8; ffi::crypto_secretbox_NONCEBYTES];
-        let bad_k = [1 as u8; ffi::crypto_secretbox_KEYBYTES];
+        let bad_n = [1 as u8; NONCEBYTES];
+        let bad_k = [1 as u8; KEYBYTES];
         let mut bad_c = C.clone();
         bad_c[0] = bad_c[0] ^ 1;
 
         let result = crypto_secretbox_open(&C, &bad_n, &K);
-        assert!(result == Err(CryptoSecretBoxErr::SecretBoxOpen));
+        assert!(result == Err(Error::Verify));
 
         let result = crypto_secretbox_open(&C, &N, &bad_k);
-        assert!(result == Err(CryptoSecretBoxErr::SecretBoxOpen));
+        assert!(result == Err(Error::Verify));
 
         let result = crypto_secretbox_open(&bad_c, &N, &K);
-        assert!(result == Err(CryptoSecretBoxErr::SecretBoxOpen));
+        assert!(result == Err(Error::Verify));
     }
 }

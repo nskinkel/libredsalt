@@ -1,32 +1,22 @@
 use ffi;
 
-#[derive(Debug, Eq, PartialEq)]
-pub enum CryptoStreamErr {
-    Stream,
-    StreamXor,
-}
+pub const KEYBYTES:     usize = 32;
+pub const NONCEBYTES:   usize = 24;
 
 /// Produce a byte stream as a function of a key and a nonce.
 ///
 /// The `crypto_stream()` function produces a clen-byte stream `c` as a
 /// function of a secret key `k` and a nonce `n`.
 ///
-/// # Failures
-///
-/// A `CryptoStreamErr::Stream` is returned if an internal error occurs.
-///
 /// # Examples
 ///
 /// Generating a 32-byte stream:
 ///
 /// ```
-/// let c = crypto_stream(32, &nonce, &key).ok().expect("failed!");
+/// let c = crypto_stream(32, &nonce, &key);
 /// ```
-///
-pub fn crypto_stream(clen: u64,
-                     n: &[u8; ffi::crypto_stream_NONCEBYTES],
-                     k: &[u8; ffi::crypto_stream_KEYBYTES])
--> Result<Vec<u8>, CryptoStreamErr> {
+pub fn crypto_stream(clen: u64, n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
+-> Vec<u8> {
 
     let mut out = vec![0 as u8; clen as usize];
 
@@ -36,8 +26,8 @@ pub fn crypto_stream(clen: u64,
                         clen,
                         n.as_ptr(),
                         k.as_ptr()) {
-            0 => Ok(out),
-            _ => Err(CryptoStreamErr::Stream),
+            0 => out,
+            _ => unreachable!("Internal error."),
         }
     }
 }
@@ -53,23 +43,16 @@ pub fn crypto_stream(clen: u64,
 /// `crypto_stream()`. Consequently `crypto_stream_xor()` can also be used to
 /// decrypt. 
 ///
-/// # Failures
-///
-/// A `CryptoStreamErr::StreamXor` is returned if an internal error occurs.
-///
 /// # Examples
 ///
 /// Encrypt a message with a key `k` and a nonce `n`:
 ///
 /// ```
 /// let m = [1 as u8, 2, 3];
-/// let ciphertext = crypto_stream_xor(&m, &nonce, &key).ok().expect("failed!");
+/// let ciphertext = crypto_stream_xor(&m, &nonce, &key);
 /// ```
-///
-pub fn crypto_stream_xor(m: &[u8],
-                         n: &[u8; ffi::crypto_stream_NONCEBYTES],
-                         k: &[u8; ffi::crypto_stream_KEYBYTES])
--> Result<Vec<u8>, CryptoStreamErr> {
+pub fn crypto_stream_xor(m: &[u8], n: &[u8; NONCEBYTES], k: &[u8; KEYBYTES])
+-> Vec<u8> {
 
     let mut c = vec![0 as u8; m.len()];
     
@@ -80,23 +63,21 @@ pub fn crypto_stream_xor(m: &[u8],
                         m.len() as u64,
                         n.as_ptr(),
                         k.as_ptr()) {
-            0 => Ok(c),
-            _ => Err(CryptoStreamErr::StreamXor),
+            0 => c,
+            _ => unreachable!("Internal error."),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use ffi;
     use super::*;
 
-    static K: [u8; ffi::crypto_stream_KEYBYTES] =
+    static K: [u8; KEYBYTES] =
         [1, 24, 23, 52, 179, 101, 151, 197, 129, 89, 94, 225, 204, 19, 90, 21,
          211, 193, 151, 239, 163, 209, 83, 108, 15, 150, 49, 227, 9, 14, 141,
          51];
-    static N: [u8; ffi::crypto_stream_NONCEBYTES] =
-        [0; ffi::crypto_stream_NONCEBYTES];
+    static N: [u8; NONCEBYTES] = [0; NONCEBYTES];
     static C: [u8; 32] = [132, 132, 197, 162, 195, 160, 109, 176, 205, 176,
                           126, 202, 233, 54, 60, 125, 57, 107, 138, 85, 81,
                           206, 124, 46, 125, 96, 99, 209, 74, 5, 88, 14];
@@ -109,15 +90,14 @@ mod tests {
 
     #[test]
     fn crypto_stream_ok() {
-        let c = crypto_stream(32, &N, &K).ok().expect("failed!");
-        assert_eq!(c, C);
+        assert_eq!(crypto_stream(32, &N, &K), C);
     }
 
     #[test]
     fn crypto_stream_xor_ok() {
-        let c = crypto_stream_xor(&M, &N, &K).ok().expect("failed!");
+        let c = crypto_stream_xor(&M, &N, &K);
         assert_eq!(c, X);
-        let m = crypto_stream_xor(&c, &N, &K).ok().expect("failed!");
+        let m = crypto_stream_xor(&c, &N, &K);
         assert_eq!(m, M);
     }
 }

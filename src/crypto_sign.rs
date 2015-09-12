@@ -1,11 +1,13 @@
 use ffi;
 
+pub const PUBLICKEYBYTES:   usize = 32;
+pub const SECRETKEYBYTES:   usize = 64;
+pub const BYTES:            usize = 64;
+
 #[derive(Debug, Eq, PartialEq)]
-pub enum CryptoSignErr {
-    KeyGen,
-    Sign,
-    SignedMessageLength,
-    SignatureVerification,
+pub enum Error {
+    Length,
+    Verify,
 }
 
 /// Generate a signing keypair.
@@ -13,32 +15,27 @@ pub enum CryptoSignErr {
 /// The `crypto_sign_keypair()` function randomly generates a secret key
 /// and a corresponding public key. It puts the secret key into `sk` and
 /// returns the public key. It guarantees that `sk` has
-/// `crypto_sign_SECRETKEYBYTES` bytes and that `pk` has
-/// `crypto_sign_PUBLICKEYBYTES` bytes.
-///
-/// # Failures
-///
-/// If the internal key generation process fails,
-/// `Err(CryptoSignErr::KeyGen)` will be returned.
+/// `crypto_sign::SECRETKEYBYTES` bytes and that `pk` has
+/// `crypto_sign::PUBLICKEYBYTES` bytes.
 ///
 /// # Examples
 ///
-/// Generating a signing keypair:
+/// Generate a signing keypair:
 ///
 /// ```
-/// let mut sk = [0 as u8; crypto_sign_SECRETKEYBYTES];
-/// let pk = crypto_sign_keypair(sk).ok().expect("Key generation failed!");
+/// let mut sk = [0 as u8; crypto_sign::SECRETKEYBYTES];
+/// let pk = crypto_sign_keypair(&sk);
 /// ```
-pub fn crypto_sign_keypair(sk: &mut[u8; ffi::crypto_sign_SECRETKEYBYTES])
-    -> Result<[u8; ffi::crypto_sign_PUBLICKEYBYTES], CryptoSignErr> {
+pub fn crypto_sign_keypair(sk: &mut[u8; SECRETKEYBYTES])
+-> [u8; PUBLICKEYBYTES] {
 
-    let mut pk = [0 as u8; ffi::crypto_sign_PUBLICKEYBYTES];
+    let mut pk = [0 as u8; PUBLICKEYBYTES];
 
     unsafe {
         match ffi::crypto_sign_ed25519_tweet_keypair(pk.as_mut_ptr(),
                                                      sk.as_mut_ptr()) {
-            0 => Ok(pk),
-            _ => Err(CryptoSignErr::KeyGen),
+            0 => pk,
+            _ => unreachable!("Internal error."),
         }
     }
 }
@@ -49,23 +46,17 @@ pub fn crypto_sign_keypair(sk: &mut[u8; ffi::crypto_sign_SECRETKEYBYTES])
 /// key `sk`. The `crypto_sign()` function returns the resulting signed message
 /// `sm`.
 ///
-/// # Failures
-///
-/// The function returns `CryptoSignErr::Sign` if an internal error occurs
-/// during the sign operation.
-///
 /// # Examples
 ///
-/// Signing a message:
+/// Sign a message:
 ///
 /// ```
-/// let sm = crypto_sign(&m, &sk).ok().expect("Signature failed!");
+/// let sm = crypto_sign(&m, &sk);
 /// ```
-pub fn crypto_sign(m: &[u8], sk: &[u8; ffi::crypto_sign_SECRETKEYBYTES])
-    -> Result<Vec<u8>, CryptoSignErr> {
+pub fn crypto_sign(m: &[u8], sk: &[u8; SECRETKEYBYTES]) -> Vec<u8> {
 
     let mlen = m.len();
-    let mut sm = vec![0 as u8; mlen+ffi::crypto_sign_BYTES];
+    let mut sm = vec![0 as u8; mlen+BYTES];
     let mut smlen: u64 = 0;
 
     unsafe {
@@ -74,8 +65,8 @@ pub fn crypto_sign(m: &[u8], sk: &[u8; ffi::crypto_sign_SECRETKEYBYTES])
                                              m.as_ptr(),
                                              mlen as u64,
                                              sk.as_ptr()) {
-            0 => Ok(sm),
-            _ => Err(CryptoSignErr::Sign),
+            0 => sm,
+            _ => unreachable!("Internal error."),
         }
     }
 }
@@ -88,10 +79,9 @@ pub fn crypto_sign(m: &[u8], sk: &[u8; ffi::crypto_sign_SECRETKEYBYTES])
 ///
 /// # Failures
 ///
-/// If the signature fails verification, `CryptoSignErr::SignatureVerification`
-/// is returned. `CryptoSignErr::SignedMessageLength` is returned if `sm` is
-/// too short to be a valid signed message (less than `crypto_sign_BYTES+1`
-/// bytes long).
+/// If the signature fails verification, `Error::Verify` is returned.
+/// `Error::Length` is returned if `sm` is too short to be a valid signed
+/// message (less than `crypto_sign::BYTES+1` bytes long).
 ///
 /// # Examples
 ///
@@ -102,16 +92,16 @@ pub fn crypto_sign(m: &[u8], sk: &[u8; ffi::crypto_sign_SECRETKEYBYTES])
 ///             .ok()
 ///             .expect("Signature verification failed!");
 /// ```
-pub fn crypto_sign_open(sm: &[u8], pk: &[u8; ffi::crypto_sign_PUBLICKEYBYTES])
-                        -> Result<Vec<u8>, CryptoSignErr> {
+pub fn crypto_sign_open(sm: &[u8], pk: &[u8; PUBLICKEYBYTES])
+-> Result<Vec<u8>, Error> {
 
     let smlen = sm.len();
 
-    if smlen <= ffi::crypto_sign_BYTES {
-        return Err(CryptoSignErr::SignedMessageLength);
+    if smlen <= BYTES {
+        return Err(Error::Length);
     }
 
-    let mut mlen: u64 = (smlen-ffi::crypto_sign_BYTES) as u64;
+    let mut mlen: u64 = (smlen-BYTES) as u64;
     let mut m = vec![0 as u8; mlen as usize];
 
     unsafe {
@@ -120,53 +110,41 @@ pub fn crypto_sign_open(sm: &[u8], pk: &[u8; ffi::crypto_sign_PUBLICKEYBYTES])
                                                   sm.as_ptr(),
                                                   smlen as u64,
                                                   pk.as_ptr()) {
-            0 => Ok(m),
-            _ => Err(CryptoSignErr::SignatureVerification),
+            0  => Ok(m),
+            -1 => Err(Error::Verify),
+            _  => unreachable!("Internal error."),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use ffi;
     use super::*;
 
     #[test]
     fn crypto_sign_keypair_ok() {
-        let mut sk = [0 as u8; ffi::crypto_sign_SECRETKEYBYTES];
-        let pk = match crypto_sign_keypair(&mut sk) {
-            Ok(v) => v,
-            Err(e) => panic!(e),
-        };
-        assert_eq!(pk.len(), ffi::crypto_sign_PUBLICKEYBYTES);
+        let mut sk = [0 as u8; SECRETKEYBYTES];
+        let pk = crypto_sign_keypair(&mut sk);
+        assert_eq!(pk.len(), PUBLICKEYBYTES);
     }
 
     #[test]
     fn crypto_sign_ok() {
-        let sk = [0 as u8; ffi::crypto_sign_SECRETKEYBYTES];
+        let sk = [0 as u8; SECRETKEYBYTES];
         let m = [1 as u8, 2, 3, 4, 5];
-        let sm = match crypto_sign(&m, &sk) {
-            Ok(v) => v,
-            Err(e) => panic!(e),
-        };
-        assert_eq!(sm.len(), 5+ffi::crypto_sign_BYTES);
-        assert_eq!(&sm[ffi::crypto_sign_BYTES .. ffi::crypto_sign_BYTES+5], m);
+        let sm = crypto_sign(&m, &sk);
+        assert_eq!(sm.len(), 5+BYTES);
+        assert_eq!(&sm[BYTES..BYTES+5], m);
     }
 
     #[test]
     fn crypto_sign_open_ok() {
         // create a valid keypair
-        let mut sk = [0 as u8; ffi::crypto_sign_SECRETKEYBYTES];
-        let pk = match crypto_sign_keypair(&mut sk) {
-            Ok(v) => v,
-            Err(e) => panic!(e),
-        };
+        let mut sk = [0 as u8; SECRETKEYBYTES];
+        let pk = crypto_sign_keypair(&mut sk);
         // sign a test message
         let m = [1 as u8, 2, 3, 4, 5];
-        let sm = match crypto_sign(&m, &sk) {
-            Ok(v) => v,
-            Err(e) => panic!(e),
-        };
+        let sm = crypto_sign(&m, &sk);
         // verify the signature
         let opened_m = match crypto_sign_open(&sm, &pk) {
             Ok(v) => v,
@@ -177,26 +155,19 @@ mod tests {
 
     #[test]
     fn crypto_sign_open_invalid_message_len() {
-        let pk = [0 as u8; ffi::crypto_sign_PUBLICKEYBYTES];
-        let result = crypto_sign_open(&[0 as u8; ffi::crypto_sign_BYTES],
-                                      &pk);
-        assert!(result == Err(CryptoSignErr::SignedMessageLength));
+        let pk = [0 as u8; PUBLICKEYBYTES];
+        let result = crypto_sign_open(&[0 as u8; BYTES], &pk);
+        assert!(result == Err(Error::Length));
     }
 
     #[test]
     fn crypto_sign_open_verification_fail() {
         // create a valid keypair
-        let mut sk = [0 as u8; ffi::crypto_sign_SECRETKEYBYTES];
-        let pk = match crypto_sign_keypair(&mut sk) {
-            Ok(v) => v,
-            Err(e) => panic!(e),
-        };
+        let mut sk = [0 as u8; SECRETKEYBYTES];
+        let pk = crypto_sign_keypair(&mut sk);
         // sign a test message
         let m = [1 as u8, 2, 3, 4, 5];
-        let sm = match crypto_sign(&m, &sk) {
-            Ok(v) => v,
-            Err(e) => panic!(e),
-        };
+        let sm = crypto_sign(&m, &sk);
 
         let mut invalid_pk = pk.clone();
         let mut invalid_sig = sm.clone();
@@ -205,19 +176,18 @@ mod tests {
         // modify the signature
         invalid_sig[0] = sm[0] ^ 1;
         // modify the message
-        invalid_msg[ffi::crypto_sign_BYTES+1] =
-            invalid_msg[ffi::crypto_sign_BYTES+1] ^ 1;
+        invalid_msg[BYTES+1] = invalid_msg[BYTES+1] ^ 1;
         // modify the pk
         invalid_pk[0] = invalid_pk[0] ^ 1;
 
         // attempt verification
         let result = crypto_sign_open(&invalid_sig, &pk);
-        assert!(result == Err(CryptoSignErr::SignatureVerification));
+        assert!(result == Err(Error::Verify));
 
         let result = crypto_sign_open(&invalid_msg, &pk);
-        assert!(result == Err(CryptoSignErr::SignatureVerification));
+        assert!(result == Err(Error::Verify));
 
         let result = crypto_sign_open(&sm, &invalid_pk);
-        assert!(result == Err(CryptoSignErr::SignatureVerification));
+        assert!(result == Err(Error::Verify));
     }
 }
