@@ -13,20 +13,22 @@ pub enum Error {
 
 /// Generate a Curve25519 keypair.
 ///
-/// The `crypto_box_keypair()` function randomly generates a secret key and a
+/// The `keypair()` function randomly generates a secret key and a
 /// corresponding public key. It puts the secret key into `sk` and returns the
-/// public key. It guarantees that `sk` has `crypto_box::SECRETKEYBYTES` bytes
-/// and that `pk` has `crypto_box::PUBLICKEYBYTES` bytes.
+/// public key. It guarantees that `sk` has `cbox::SECRETKEYBYTES` bytes
+/// and that `pk` has `cbox::PUBLICKEYBYTES` bytes.
 ///
 /// # Examples
 ///
 /// Generating a keypair:
 ///
 /// ```
-/// let mut sk = [0 as u8; crypto_box::SECRETKEYBYTES];
-/// let pk = crypto_box_keypair(&mut sk).ok().expect("Keypair failed!");
+/// # use tweetnaclrs::crypto::cbox;
+///
+/// let mut sk = [0 as u8; cbox::SECRETKEYBYTES];
+/// let pk = cbox::keypair(&mut sk);
 /// ```
-pub fn crypto_box_keypair(sk: &mut [u8; SECRETKEYBYTES])
+pub fn keypair(sk: &mut [u8; SECRETKEYBYTES])
 -> [u8; PUBLICKEYBYTES] {
 
     let mut pk = [0 as u8; PUBLICKEYBYTES];
@@ -43,22 +45,28 @@ pub fn crypto_box_keypair(sk: &mut [u8; SECRETKEYBYTES])
 
 /// Encrypt and authenticate a message.
 ///
-/// The `crypto_box()` function encrypts and authenticates a message `m` using
+/// The `box()` function encrypts and authenticates a message `m` using
 /// the sender's secret key `sk`, the receiver's public key `pk`, and a nonce
-/// `n`. The `crypto_box()` function returns the resulting ciphertext `c`.
+/// `n`. The `box()` function returns the resulting ciphertext `c`.
 ///
 /// # Examples
 ///
 /// Encrypting a message:
 ///
 /// ```
-/// let ciphertext = crypto_box(&plaintext, &nonce, &their_public_key,
-///                             &my_secret_key).ok().expect("Box Failed!");
+/// # use tweetnaclrs::crypto::cbox;
+/// # let nonce = [0 as u8; cbox::NONCEBYTES];
+/// # let my_secret_key = [0 as u8; cbox::SECRETKEYBYTES];
+/// # let their_public_key = [0 as u8; cbox::PUBLICKEYBYTES];
+///
+/// let plaintext = [1 as u8, 2, 3];
+///
+/// let ciphertext = cbox::cbox(&plaintext, &nonce, &their_public_key, &my_secret_key);
 /// ```
-pub fn crypto_box(m:  &[u8],
-                  n:  &[u8; NONCEBYTES],
-                  pk: &[u8; PUBLICKEYBYTES],
-                  sk: &[u8; SECRETKEYBYTES])
+pub fn cbox(m:  &[u8],
+            n:  &[u8; NONCEBYTES],
+            pk: &[u8; PUBLICKEYBYTES],
+            sk: &[u8; SECRETKEYBYTES])
 -> Vec<u8> {
 
     let mut padded_m = vec![0 as u8; ZEROBYTES];
@@ -81,10 +89,9 @@ pub fn crypto_box(m:  &[u8],
 
 /// Verify and decrypt a ciphertext.
 ///
-/// The `crypto_box_open()` function verifies and decrypts a ciphertext `c`
+/// The `open()` function verifies and decrypts a ciphertext `c`
 /// using the receiver's secret key `sk`, the sender's public key `pk`, and a
-/// nonce `n`. The `crypto_box_open()` function returns the resulting plaintext
-/// `m`.
+/// nonce `n`. The `open()` function returns the resulting plaintext `m`.
 ///
 /// # Failures
 ///
@@ -95,17 +102,22 @@ pub fn crypto_box(m:  &[u8],
 ///
 /// Verify and decrypt a message:
 ///
-/// ```
-/// let plaintext = crypto_box_open(&ciphertext, &nonce, &their_public_key,
-///                                 &my_secret_key)
-///                                     .ok()
-///                                     .expect("Verification Failed!");
-/// ```
+/// ```should_panic
+/// # use tweetnaclrs::crypto::cbox;
+/// # let nonce = [0 as u8; cbox::NONCEBYTES];
+/// # let their_public_key = [0 as u8; cbox::PUBLICKEYBYTES];
+/// # let my_secret_key = [0 as u8; cbox::SECRETKEYBYTES];
+/// # let ciphertext = [1 as u8; 10];
 ///
-pub fn crypto_box_open(c:  &[u8],
-                       n:  &[u8; NONCEBYTES],
-                       pk: &[u8; PUBLICKEYBYTES],
-                       sk: &[u8; SECRETKEYBYTES])
+/// let plaintext = cbox::open(&ciphertext, &nonce, &their_public_key, &my_secret_key)
+///                     .ok()
+///                     .expect("Verification failed!");
+///
+/// ```
+pub fn open(c:  &[u8],
+            n:  &[u8; NONCEBYTES],
+            pk: &[u8; PUBLICKEYBYTES],
+            sk: &[u8; SECRETKEYBYTES])
 -> Result<Vec<u8>, Error> {
 
     let mut padded_c = vec![0 as u8; BOXZEROBYTES];
@@ -154,27 +166,27 @@ mod tests {
 
     #[test]
     #[allow(unused_variables)]
-    fn crypto_box_keypair_ok() {
+    fn keypair_ok() {
         let mut sk = [0 as u8; SECRETKEYBYTES];
-        let pk = crypto_box_keypair(&mut sk);
+        let pk = keypair(&mut sk);
     }
 
     #[test]
-    fn crypto_box_ok() {
-        let c = crypto_box(&M, &NONCE, &BOB_PK, &ALICE_SK);
+    fn cbox_ok() {
+        let c = cbox(&M, &NONCE, &BOB_PK, &ALICE_SK);
         assert_eq!(c, &CIPHERTEXT);
     }
 
     #[test]
-    fn crypto_box_open_ok() {
-        let m = crypto_box_open(&CIPHERTEXT, &NONCE, &ALICE_PK, &BOB_SK)
+    fn open_ok() {
+        let m = open(&CIPHERTEXT, &NONCE, &ALICE_PK, &BOB_SK)
                     .ok()
                     .expect("Box Open Failed!");
         assert_eq!(m, &M);
     }
 
     #[test]
-    fn crypto_box_open_fail() {
+    fn open_fail() {
         let mut bad_c = CIPHERTEXT.clone();
         bad_c[0] = bad_c[0] ^ 1;
 
@@ -187,16 +199,16 @@ mod tests {
         let mut bad_sk = BOB_SK.clone();
         bad_sk[1] = bad_sk[1] ^ 1;
 
-        let result = crypto_box_open(&bad_c, &NONCE, &ALICE_PK, &BOB_SK);
+        let result = open(&bad_c, &NONCE, &ALICE_PK, &BOB_SK);
         assert_eq!(result, Err(Error::Verify));
 
-        let result = crypto_box_open(&CIPHERTEXT, &bad_n, &ALICE_PK, &BOB_SK);
+        let result = open(&CIPHERTEXT, &bad_n, &ALICE_PK, &BOB_SK);
         assert_eq!(result, Err(Error::Verify));
 
-        let result = crypto_box_open(&CIPHERTEXT, &NONCE, &bad_pk, &BOB_SK);
+        let result = open(&CIPHERTEXT, &NONCE, &bad_pk, &BOB_SK);
         assert_eq!(result, Err(Error::Verify));
 
-        let result = crypto_box_open(&CIPHERTEXT, &NONCE, &ALICE_PK, &bad_sk);
+        let result = open(&CIPHERTEXT, &NONCE, &ALICE_PK, &bad_sk);
         assert_eq!(result, Err(Error::Verify));
     }
 }

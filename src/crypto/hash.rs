@@ -4,19 +4,20 @@ pub const BYTES: usize = 64;
 
 /// Hash a message.
 ///
-/// The `crypto_hash()` function hashes a message `m` using `SHA512`. It
+/// The `hash()` function hashes a message `m` using `SHA512`. It
 /// returns a hash `h`. The output length `h.size()` is always
-/// `crypto_hash::BYTES`.
+/// `hash::BYTES`.
 ///
 /// # Examples
 ///
 /// Hash a simple message:
 ///
 /// ```
-/// let m = [1 as u8, 2, 3];
-/// let hashed = crypto_hash(&m);
+/// # use tweetnaclrs::crypto::hash;
+/// let m = b"hello";
+/// let h = hash::hash(m);
 /// ```
-pub fn crypto_hash(m: &[u8]) -> [u8; BYTES] {
+pub fn hash(m: &[u8]) -> [u8; BYTES] {
 
     let mut out = [0 as u8; BYTES];
 
@@ -35,7 +36,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn crypto_hash_ok() {
+    fn hash_ok() {
         let m : [u8; 3] = [1, 2, 3];
         let expected : [u8; 64] = [ 39, 134,  76, 197,  33, 154, 149,  26,
                                    122, 110,  82, 184, 200, 221, 223, 105,
@@ -45,7 +46,7 @@ mod tests {
                                    250, 106, 121, 115,  17, 101,  88,  70,
                                    119,   6,  96,  69, 201,  89, 237,  15,
                                    153,  41, 104, 141,   4, 222, 252,  41];
-        let hashed = crypto_hash(&m);
+        let hashed = hash(&m);
         assert!(hashed.iter().zip(expected.iter()).all(|(a,b)| a == b));
     }
 }

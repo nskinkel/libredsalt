@@ -12,22 +12,22 @@ pub enum Error {
 
 /// Generate a signing keypair.
 ///
-/// The `crypto_sign_keypair()` function randomly generates a secret key
+/// The `keypair()` function randomly generates a secret key
 /// and a corresponding public key. It puts the secret key into `sk` and
 /// returns the public key. It guarantees that `sk` has
-/// `crypto_sign::SECRETKEYBYTES` bytes and that `pk` has
-/// `crypto_sign::PUBLICKEYBYTES` bytes.
+/// `crypto::sign::SECRETKEYBYTES` bytes and that `pk` has
+/// `crypto::sign::PUBLICKEYBYTES` bytes.
 ///
 /// # Examples
 ///
 /// Generate a signing keypair:
 ///
 /// ```
-/// let mut sk = [0 as u8; crypto_sign::SECRETKEYBYTES];
-/// let pk = crypto_sign_keypair(&sk);
+/// # use tweetnaclrs::crypto::sign;
+/// let mut sk = [0 as u8; sign::SECRETKEYBYTES];
+/// let pk = sign::keypair(&mut sk);
 /// ```
-pub fn crypto_sign_keypair(sk: &mut[u8; SECRETKEYBYTES])
--> [u8; PUBLICKEYBYTES] {
+pub fn keypair(sk: &mut[u8; SECRETKEYBYTES]) -> [u8; PUBLICKEYBYTES] {
 
     let mut pk = [0 as u8; PUBLICKEYBYTES];
 
@@ -42,18 +42,20 @@ pub fn crypto_sign_keypair(sk: &mut[u8; SECRETKEYBYTES])
 
 /// Sign a message.
 ///
-/// The `crypto_sign()` function signs a message `m` using the signer's secret
-/// key `sk`. The `crypto_sign()` function returns the resulting signed message
-/// `sm`.
+/// The `sign()` function signs a message `m` using the signer's secret
+/// key `sk`. The `sign()` function returns the resulting signed message `sm`.
 ///
 /// # Examples
 ///
-/// Sign a message:
+/// Sign a message `m` using a secret key `sk`:
 ///
 /// ```
-/// let sm = crypto_sign(&m, &sk);
+/// # use tweetnaclrs::crypto::sign;
+/// # let sk = [0 as u8; 64];
+/// let m = b"I accept your offer.";
+/// let sm = sign::sign(m, &sk);
 /// ```
-pub fn crypto_sign(m: &[u8], sk: &[u8; SECRETKEYBYTES]) -> Vec<u8> {
+pub fn sign(m: &[u8], sk: &[u8; SECRETKEYBYTES]) -> Vec<u8> {
 
     let mlen = m.len();
     let mut sm = vec![0 as u8; mlen+BYTES];
@@ -73,27 +75,29 @@ pub fn crypto_sign(m: &[u8], sk: &[u8; SECRETKEYBYTES]) -> Vec<u8> {
 
 /// Verify a message signature.
 ///
-/// The `crypto_sign_open()` function verifies the signature in `sm` using the
-/// signer's public key `pk`. The `crypto_sign_open()` function returns the
+/// The `open()` function verifies the signature in `sm` using the
+/// signer's public key `pk`. The `open()` function returns the
 /// message `m`.
 ///
 /// # Failures
 ///
 /// If the signature fails verification, `Error::Verify` is returned.
 /// `Error::Length` is returned if `sm` is too short to be a valid signed
-/// message (less than `crypto_sign::BYTES+1` bytes long).
+/// message (less than `crypto::sign::BYTES+1` bytes long).
 ///
 /// # Examples
 ///
-/// Verify a message signature:
+/// Verify the signature of message `sm` with public key `pk`:
 ///
+/// ```should_panic
+/// # use tweetnaclrs::crypto::sign;
+/// # let sm = [0 as u8; 65];
+/// # let pk = [1 as u8; 32];
+/// let m = sign::open(&sm, &pk)
+///                 .ok()
+///                 .expect("Signature verification failed!");
 /// ```
-/// let m = crypto_sign_open(&sm, &pk)
-///             .ok()
-///             .expect("Signature verification failed!");
-/// ```
-pub fn crypto_sign_open(sm: &[u8], pk: &[u8; PUBLICKEYBYTES])
--> Result<Vec<u8>, Error> {
+pub fn open(sm: &[u8], pk: &[u8; PUBLICKEYBYTES]) -> Result<Vec<u8>, Error> {
 
     let smlen = sm.len();
 
@@ -122,31 +126,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn crypto_sign_keypair_ok() {
+    fn keypair_ok() {
         let mut sk = [0 as u8; SECRETKEYBYTES];
-        let pk = crypto_sign_keypair(&mut sk);
+        let pk = keypair(&mut sk);
         assert_eq!(pk.len(), PUBLICKEYBYTES);
     }
 
     #[test]
-    fn crypto_sign_ok() {
+    fn sign_ok() {
         let sk = [0 as u8; SECRETKEYBYTES];
         let m = [1 as u8, 2, 3, 4, 5];
-        let sm = crypto_sign(&m, &sk);
+        let sm = sign(&m, &sk);
         assert_eq!(sm.len(), 5+BYTES);
         assert_eq!(&sm[BYTES..BYTES+5], m);
     }
 
     #[test]
-    fn crypto_sign_open_ok() {
+    fn open_ok() {
         // create a valid keypair
         let mut sk = [0 as u8; SECRETKEYBYTES];
-        let pk = crypto_sign_keypair(&mut sk);
+        let pk = keypair(&mut sk);
         // sign a test message
         let m = [1 as u8, 2, 3, 4, 5];
-        let sm = crypto_sign(&m, &sk);
+        let sm = sign(&m, &sk);
         // verify the signature
-        let opened_m = match crypto_sign_open(&sm, &pk) {
+        let opened_m = match open(&sm, &pk) {
             Ok(v) => v,
             Err(e) => panic!(e),
         };
@@ -154,20 +158,20 @@ mod tests {
     }
 
     #[test]
-    fn crypto_sign_open_invalid_message_len() {
+    fn open_invalid_message_len() {
         let pk = [0 as u8; PUBLICKEYBYTES];
-        let result = crypto_sign_open(&[0 as u8; BYTES], &pk);
+        let result = open(&[0 as u8; BYTES], &pk);
         assert!(result == Err(Error::Length));
     }
 
     #[test]
-    fn crypto_sign_open_verification_fail() {
+    fn open_verification_fail() {
         // create a valid keypair
         let mut sk = [0 as u8; SECRETKEYBYTES];
-        let pk = crypto_sign_keypair(&mut sk);
+        let pk = keypair(&mut sk);
         // sign a test message
         let m = [1 as u8, 2, 3, 4, 5];
-        let sm = crypto_sign(&m, &sk);
+        let sm = sign(&m, &sk);
 
         let mut invalid_pk = pk.clone();
         let mut invalid_sig = sm.clone();
@@ -181,13 +185,13 @@ mod tests {
         invalid_pk[0] = invalid_pk[0] ^ 1;
 
         // attempt verification
-        let result = crypto_sign_open(&invalid_sig, &pk);
+        let result = open(&invalid_sig, &pk);
         assert!(result == Err(Error::Verify));
 
-        let result = crypto_sign_open(&invalid_msg, &pk);
+        let result = open(&invalid_msg, &pk);
         assert!(result == Err(Error::Verify));
 
-        let result = crypto_sign_open(&sm, &invalid_pk);
+        let result = open(&sm, &invalid_pk);
         assert!(result == Err(Error::Verify));
     }
 }

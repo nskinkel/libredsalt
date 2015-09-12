@@ -5,18 +5,23 @@ pub const KEYBYTES: usize = 32;
 
 /// Authenticate a message.
 ///
-/// The `crypto_onetimeauth()` function authenticates a message `m` using a
+/// The `onetimeauth()` function authenticates a message `m` using a
 /// secret key `k`, and returns an authenticator `a`. The authenticator length
-/// is always `crypto_onetimeauth::BYTES`.
+/// is always `onetimeauth::BYTES`.
 ///
 /// # Examples
 ///
-/// Authenticate a message:
+/// Authenticate a message `m` with a secret key `k`:
 ///
 /// ```
-/// let auth = crypto_onetimeauth(&m, &k);
+/// # use tweetnaclrs::crypto::onetimeauth;
+/// # let k = [0 as u8; onetimeauth::KEYBYTES];
+/// let m = b"attack at midnight";
+/// let auth = onetimeauth::onetimeauth(m, &k);
 /// ```
-pub fn crypto_onetimeauth(m: &[u8], k: &[u8; KEYBYTES]) -> [u8; BYTES] {
+pub fn onetimeauth(m: &[u8],
+                   k: &[u8; KEYBYTES])
+-> [u8; BYTES] {
 
     let mut auth = [0 as u8; BYTES];
 
@@ -43,12 +48,22 @@ pub fn crypto_onetimeauth(m: &[u8], k: &[u8; KEYBYTES]) -> [u8; BYTES] {
 ///
 /// # Examples
 ///
+/// Verify an authenticator `a` for a message `m` under a secret key `k`:
+///
 /// ```
-/// let verified = crypto_onetimeauth_verify(&a, &m, &k);
+/// # use tweetnaclrs::crypto::onetimeauth;
+/// # let k = [0 as u8; onetimeauth::KEYBYTES];
+/// # let a = [1 as u8; onetimeauth::BYTES];
+/// # let m = [0 as u8; 1];
+/// if onetimeauth::verify(&a, &m, &k) {
+///     println!("Verified!");
+/// } else {
+///     println!("Verification failed!");
+/// }
 /// ```
-pub fn crypto_onetimeauth_verify(a: &[u8; BYTES],
-                                 m: &[u8],
-                                 k: &[u8; KEYBYTES])
+pub fn verify(a: &[u8; BYTES],
+              m: &[u8],
+              k: &[u8; KEYBYTES])
 -> bool {
 
     unsafe {
@@ -78,18 +93,18 @@ mod tests {
          245];
 
     #[test]
-    pub fn crypto_onetimeauth_ok() {
-        let result = crypto_onetimeauth(&M, &K);
+    pub fn onetimeauth_ok() {
+        let result = onetimeauth(&M, &K);
         assert_eq!(result, A);
     }
 
     #[test]
-    pub fn crypto_onetimeauth_verify_ok() {
-        assert!(crypto_onetimeauth_verify(&A, &M, &K));
+    pub fn verify_ok() {
+        assert!(verify(&A, &M, &K));
     }
 
     #[test]
-    pub fn crypto_onetimeauth_verify_fail() {
+    pub fn verify_fail() {
         let mut bad_a = A.clone();
         bad_a[0] = bad_a[0] ^ 1;
 
@@ -99,8 +114,8 @@ mod tests {
         let mut bad_k = K.clone();
         bad_k[0] = bad_k[0] ^ 1;
 
-        assert!(!crypto_onetimeauth_verify(&bad_a, &M, &K));
-        assert!(!crypto_onetimeauth_verify(&A, &bad_m, &K));
-        assert!(!crypto_onetimeauth_verify(&A, &M, &bad_k));
+        assert!(!verify(&bad_a, &M, &K));
+        assert!(!verify(&A, &bad_m, &K));
+        assert!(!verify(&A, &M, &bad_k));
     }
 }
